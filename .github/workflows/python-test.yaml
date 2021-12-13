@@ -1,0 +1,45 @@
+name: Python Test
+
+on:
+  # Triggers the workflow on push to master and any PRs to master
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  python-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7, 3.8]
+        poetry-version: [1.1.6]
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Install package
+        run: |
+          poetry config virtualenvs.create false && poetry install
+        env:
+          PIP_DEFAULT_TIMEOUT: "60"
+      - name: Run Test and generate coverate report
+        run: poetry run pytest --cov=./ --cov-report=xml
+      - name: Upload Coverage to CodeCov
+        uses: codecov/codecov-action@v1
+        with:
+          file: coverage.xml
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true

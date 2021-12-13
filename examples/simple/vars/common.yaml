@@ -1,0 +1,14 @@
+provider:
+  aws:
+    version: ~> 3.21.0
+    region: '%{region}'
+
+manifest:
+  modules:
+    - s3 as basic_bucket
+
+module:
+  basic_bucket:
+    name: common-bucket
+    
+

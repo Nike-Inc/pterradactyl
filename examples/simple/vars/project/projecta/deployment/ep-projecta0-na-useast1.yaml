@@ -1,0 +1,8 @@
+module:
+  basic_bucket:
+    name: ep-projecta-bucket
+
+  dynamodb:
+    name: team1-prod-table
+    stream_enabled: true
+    stream_view_type: "NEW_AND_OLD_IMAGES"

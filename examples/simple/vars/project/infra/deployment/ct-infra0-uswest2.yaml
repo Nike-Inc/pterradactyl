@@ -1,0 +1,50 @@
+---
+manifest:
+  modules:
+    - terraform
+    - s3
+    - kms
+    - iam_role as jwt_iam_role
+
+module:
+  jwt_iam_role:
+    name: jwt_iam_role
+    metadata: ${module.deployment.metadata}
+    policy:
+    - resources:
+      - ${module.s3.arn["jwt"]}/*
+      actions:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:DeleteObject
+    - resources:
+      - ${module.s3.arn["jwt"]}
+      actions:
+        - s3:ListBucket
+    - resources:
+      - ${module.s3.kms_id["jwt"]}
+      actions:
+        - kms:DescribeKey
+        - kms:Decrypt
+  s3:
+    buckets:
+      terraform:
+        read:
+          - self
+        write:
+          - self
+      jwt:
+        read:
+          - ${module.known_roles.this_account.power_role}
+          - ${module.jwt_iam_role.arn}
+        write:
+          - ${module.known_roles.this_account.power_role}
+          - ${module.jwt_iam_role.arn}
+
+  kms:
+    keys:
+      terraform:
+        encrypt_decrypt:
+          - self
+          - ${module.known_roles.this_account.power_role}
+          - ${module.known_roles.all_accounts.admin_role}

@@ -1,0 +1,9 @@
+module:
+    s3:
+      acl: private
+sops:
+    kms:
+    -   arn: arn:aws:kms:us-west-2:<>:alias/<common-alias>
+        created_at:
+        enc:
+        aws_profile: ""

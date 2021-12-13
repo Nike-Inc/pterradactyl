@@ -1,0 +1,38 @@
+terraform:
+  backend:
+    s3:
+      bucket: '%{account_prefix}-infra0-global-terraform'
+      dynamodb_table: '%{account_prefix}-infra0-uswest2-terraform'
+      region: us-west-2
+      key: '%{state_prefix}'
+
+provider:
+  aws:
+    version: ~> 3.21.0
+    region: '%{region}'
+
+manifest:
+  modules:
+    - deployment
+    - known_roles
+    - s3 as basic_bucket
+
+module:
+  deployment:
+    product: '%{product}'
+    n: '%{n}'
+
+  known_roles:
+    roles:
+      admin_role: NIKE.SSO.AdminRole
+      power_role: NIKE.SSO.PowerRole
+
+    account_ids:
+      - '123456789011'
+      - '123456789012'
+
+  basic_bucket:
+    name: common-bucket
+    metadata: ${module.deployment.metadata}
+
+

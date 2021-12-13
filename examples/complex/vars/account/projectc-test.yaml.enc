@@ -1,0 +1,9 @@
+module:
+    dynamodb:
+        secret_key: <secret_value>
+sops:
+    kms:
+    -   arn: arn:aws:kms:us-west-2:<account-id>:alias/<common-alias>
+        created_at: 
+        enc:
+        aws_profile: ""

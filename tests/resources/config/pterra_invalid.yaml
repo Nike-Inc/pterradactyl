@@ -1,0 +1,64 @@
+---
+hiera:
+  backends:
+    - yaml
+    - json
+    - yaml.enc
+
+  hierarchy:
+    - common
+
+  yaml=
+    datadir: vars
+
+  json:
+    datadir: vars
+
+  yaml.enc:
+    datadir: vars
+
+celect:
+  family:
+    c: common
+    e: external
+    u: unrestricted
+  account_type:
+    t: test
+    p: production
+
+facter:
+  - arguments:
+      deployment:
+        positional: true
+        description: Deployment ID
+      stage:
+        alias: s
+        description: Stage name (test, dev, stage, prod)
+      product:
+        alias: p
+        description: Product name
+
+    environment:
+      deploy_user: USER
+
+  - regex:
+      source: deployment
+      expression: (?P<account_prefix>\w\w)
+      transforms: {}
+
+  - jinja:
+      state_prefix: |
+        {{ deployment }}.tfstate.json
+
+terraform:
+  version: 0.13.1
+  cache_key: deployment
+  plugins:
+    - repo: terraform-provider-kubectl
+      owner: gavinbunney
+      version: '>=1.10.0'
+  module_path:
+    - terraform/modules
+
+pterradactyl:
+  version: '>=1.2.0'

@@ -1,0 +1,10 @@
+account_prefix: ut
+account_type: test
+aws_account_alias: unrestricted-clct-test
+deploy_user: test_user
+deployment: ut-test0-na-uswest2
+n: '0'
+product=test
+region: us-west-2
+serving_region: na
+state_prefix: ut-test0-na-uswest2.tfstate.json
