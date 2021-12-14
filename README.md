@@ -1,7 +1,7 @@
 Pterradactyl
 ---
 
-[![codecov](https://codecov.io/gh/Nike-Inc/pterradactyl/branch/master/graph/badge.svg?token=J9slc2blRx)](https://codecov.io/gh/Nike-Inc/pterradactyl)
+[![codecov](https://codecov.io/gh/Nike-Inc/pterradactyl/branch/master/graph/badge.svg?token=CvHYOh04mZ)](https://codecov.io/gh/Nike-Inc/pterradactyl)
 [![Test](https://github.com/Nike-Inc/pterradactyl/actions/workflows/python-test.yaml/badge.svg)](https://github.com/Nike-Inc/pterradactyl/actions/workflows/python-test.yaml)
 [![PyPi Release](https://github.com/Nike-Inc/pterradactyl/actions/workflows/python-build.yaml/badge.svg)](https://github.com/Nike-Inc/pterradactyl/actions/workflows/python-build.yaml)
 ![License](https://img.shields.io/pypi/l/pterradactyl)
@@ -105,11 +105,11 @@ Note: keep line code coverage on at least 80% level.
 
 # <a name="examples"></a> Examples of creating new projects/prodcuts:
 
-Basic Example [here](../examples/simple/README.md)
+Basic Example [here](https://github.com/Nike-Inc/pterradactyl/blob/master/examples/simple/README.md)
 - Module setup
 - Attribute overriding
 
-Advanced Example [here](../examples/complex/README.md)
+Advanced Example [here](https://github.com/Nike-Inc/pterradactyl/blob/master/examples/complex/README.md)
 - Create infrastructure for a new AWS account
 - Common tag setup
 - KMS encryption
