@@ -1,0 +1,14 @@
+---
+manifest:
+  modules:
+    - dynamodb
+
+module:
+  dynamodb:
+    name: team1-test-table
+    metadata: ${module.deployment.metadata}
+    hash_key: node_id
+    stream_enabled: false
+    attributes:
+      - name: node_id
+        type: 'S'

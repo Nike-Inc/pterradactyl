@@ -1,0 +1,2 @@
+global:
+  dns_zone: '%{aws_account_alias}.<your_prod_domain>.com'

@@ -1,0 +1,30 @@
+---
+terraform:
+  backend:
+    s3:
+      bucket: '%{account_prefix}-infra0-global-terraform'
+      dynamodb_table: '%{account_prefix}-infra0-uswest2-terraform'
+      region: us-west-2
+      key: '%{state_prefix}'
+
+provider:
+  aws:
+    version: ~> 3.59.0
+    region: '%{region}'
+
+manifest:
+  modules:
+    - deployment
+
+module:
+  deployment:
+    product: '%{product}'
+    n: '%{n}'
+
+  terraform:
+    metadata: ${module.deployment.metadata}
+
+  s3:
+    prefix: '%{product}-'
+    metadata: ${module.deployment.metadata}
+

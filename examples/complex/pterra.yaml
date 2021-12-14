@@ -1,0 +1,95 @@
+---
+# this is standard hiera config though the ruby :symbols are optional
+hiera:
+  backends:
+    - yaml
+    - json
+    - yaml.enc
+
+  hierarchy:
+    - common
+    - account/%{aws_account_alias}
+    - account_type/%{account_type}
+    - project/%{project}/common
+    - project/%{project}/account/%{aws_account_alias}
+    - project/%{project}/account_type/%{account_type}
+    - project/%{project}/deployment/%{deployment}
+
+  yaml:
+    datadir: vars
+
+  json:
+    datadir: vars
+
+  yaml.enc:
+    datadir: vars
+
+complex:
+# This mapping allows us to get family and account_type form stack name: e.g. vt-projecta0-uswest2
+# vt refers to team1 and test environment.
+  family:
+    c: common
+    e: team1
+    v: team2
+  account_type:
+    t: test
+    p: production
+
+# facter expects arrays of dicts. this is used for ordering,
+# if you want to ensure one fact is processed after another. this is because
+# some types of facters can reference values of facts defined by other facters.
+facter:
+  # arguments facter simply defines command line arguments whose values are directly used as facts
+  - arguments:
+      deployment:
+        positional: true
+        description: Deployment ID
+      stage:
+        alias: s
+        description: Stage name (test, dev, stage, prod)
+      project:
+        alias: p
+        description: project name (projecta, projectb, ...)
+
+  - regex:
+      source: deployment
+      expression: (?P<family>\w)(?P<account_type>\w)-(?P<project>[a-z]+)(?P<n>\d+)-(?P<region>\w+)
+      transforms:
+        - account_type: "{{ config['complex']['account_type'][account_type] }}"
+        - family: "{{ config['complex']['family'][family] }}"
+        - region: '{{ region[0:2] }}-{{region[2:-1]}}-{{region[-1]}}'
+    # sets facts based on the output of an arbitrary shell command, this should be a one line output
+    # and will be trimmed
+  - shell:
+      git_sha: git rev-parse HEAD
+      aws_account_alias:
+        command: echo "projecta-test" # e.g. aws iam list-account-aliases
+        #jsonpath: $.AccountAliases[0]
+
+    # facts set from the value of an environment variable
+    environment:
+      deploy_user: USER
+
+  # state backend facts
+  - regex:
+      source: deployment
+      expression: (?P<account_prefix>\w\w)
+      transforms: {}
+
+  - jinja:
+      state_prefix: |
+        {{ deployment }}.tfstate.json
+
+terraform:
+  # Set the version required in this repo. pterradactyl will automatically fetch it
+  version: 0.13.1
+  cache_key: deployment
+  plugins:
+    - repo: terraform-provider-kubectl
+      owner: gavinbunney
+      version: '>=1.10.0'
+  module_path:
+    - terraform/modules
+
+pterradactyl:
+  version: '>=1.2.0'

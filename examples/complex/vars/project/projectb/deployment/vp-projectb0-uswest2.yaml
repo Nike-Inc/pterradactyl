@@ -1,0 +1,9 @@
+manifest:
+  modules:
+    - sqs
+module:
+  basic_bucket:
+    name: vp-projectb-bucket
+  sqs:
+    name: vp-projectb-sqs
+    fifo_queue: false
