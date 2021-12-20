@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pterradactyl"
-version = "1.2.8"
+version = "1.2.9"
 description = "hiera-inspired terraform wrapper"
 authors = ["Rob King <rob.king@nike.com>",
            "Vincent Liu <vincent.liu@nike.com>"
@@ -33,6 +33,7 @@ pytest = { version = ">=4.6.9" }
 pytest-cov = { version = ">=3.0.0"}
 mock = { version = ">=3.0.4" }
 responses = { version = "^0.4.0" }
+testfixtures = { version = "6.18.3"}
 
 [tool.poetry.scripts]
 pt = "pterradactyl.__main__:main"

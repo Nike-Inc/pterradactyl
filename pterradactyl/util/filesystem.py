@@ -1,8 +1,12 @@
 import os
 import stat
+import json
+import logging
 
 from pathlib import Path
 from shutil import copy
+
+log = logging.getLogger(__name__)
 
 def ensure_executable(path):
   st = os.stat(path)
@@ -28,3 +32,38 @@ def sync_local_tf_plugins(source_dir: str, domain: str, owner: str, repo: str, v
   if not os.path.exists(target_path):
     os.makedirs(target_path)
   copy(source_dir, target_path)
+
+def check_stderr(std_err):
+    yellow = "\x1b[33;21m"
+    red = "\x1b[31m\n\x1b[1m\x1b[31m"
+    reset = "\x1b[0m"
+    try:
+      facts_file = os.path.join(os.environ['WORKSPACE_DIR'], 'facts.json')
+      stack_facts = get_json(facts_file)
+      if 'Access Denied' in str(std_err) and 'aws_account_alias' in stack_facts.keys():
+        log.error((
+            bytes(red, encoding='utf-8') +
+            b'Error: You got Access Denied from AWS (HTTP 403 status code).\n\n' +
+            bytes(reset, encoding='utf-8') +
+            b'You are probably authenticated to incorrect AWS account.\n' +
+            b'Check your stack refers to the actual AWS account being bind to.\n\n').decode('utf-8'))
+        log.error((
+            b'Current AWS account alias: ' +
+            bytes(yellow, encoding='utf-8') +
+            b'{},' +
+            bytes(reset, encoding='utf-8') +
+            b' applying to ' +
+            bytes(yellow, encoding='utf-8') +
+            b'{}-{}.\n\n' +
+            bytes(reset, encoding='utf-8')).decode('utf-8').format(stack_facts['aws_account_alias'], stack_facts['family'], stack_facts['account_type']))
+        log.error(
+            f"All facts for your stack: {json.dumps(stack_facts, indent=4, sort_keys=True)}")
+      else:
+        log.error(std_err.decode('utf-8'))
+    except:
+        log.error("Could not parse facts.json file at location: {}.\n Returning default error message.".format(facts_file))
+        log.error(std_err.decode('utf-8'))
+
+def get_json(path):
+    with open(path, "r") as stream:
+        return json.load(stream)

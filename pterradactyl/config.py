@@ -73,6 +73,7 @@ class Config(object):
         # XXX TODO - handle no cache key
         if cache_key:
             workspace_dir = os.path.join(self.cache_dir, "workspace", cache_key)
+            os.environ["WORKSPACE_DIR"] = workspace_dir
         else:
             log.error("fail no cache key")
             exit(1)

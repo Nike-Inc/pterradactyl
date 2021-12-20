@@ -2,18 +2,20 @@ import platform
 import os
 import re
 import subprocess
+import sys
 import json
 import glob
-
 import requests
 import logging
+
 from pathlib import Path
 from semantic_version import SimpleSpec, Version
 from pterradactyl.config import Config
 from pterradactyl.util import memoize
 from pterradactyl.util.download import download
-from pterradactyl.util.filesystem import ensure_executable, ensure_directory, sync_local_tf_plugins
+from pterradactyl.util.filesystem import ensure_executable, ensure_directory, sync_local_tf_plugins, check_stderr
 
+logging.basicConfig(level=logging.INFO, encoding='utf-8', format=None)
 log = logging.getLogger(__name__)
 
 
@@ -32,7 +34,21 @@ class Terraform(object):
         self.auth_headers = terraform_config.get("git_credentials", {})
 
     def execute(self, *args):
-        process = subprocess.run([self.terraform] + list(args), close_fds=True, cwd=self.cwd)
+        process = subprocess.Popen([self.terraform] + list(args), close_fds=True, cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
+
+        output = []
+        while True:
+            line = process.stdout.readline()
+            if line == '' and process.poll() is not None:
+                break
+            sys.stdout.write(line)
+            output.append(bytes(line, encoding='utf-8'))
+            sys.stdout.flush()
+        process.communicate()
+        if (process.returncode == 0):
+            return True
+        else:
+            check_stderr(b''.join(output))
 
     def validate(self):
         # reinitialize if state backend changed
