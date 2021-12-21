@@ -13,6 +13,10 @@ from testfixtures.popen import MockPopen
 
 class TestManifest(unittest.TestCase):
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     def setUp(self) -> None:
         self.deployment = 'ut-test0-na-uswest2'
         self.base_dir = os.path.join(os.getcwd(), 'tests/resources/config')
@@ -88,3 +92,23 @@ class TestManifest(unittest.TestCase):
         assert os.path.isfile(self.facts_json_file)
         self.assertDictEqual(actual_facts, json.load(
             open(self.facts_json_file)))
+
+    @patch('os.getcwd')
+    @patch('requests.Session.get')
+    @patch('pterradactyl.terraform.terraform.json')
+    @patch('pterradactyl.terraform.terraform.Terraform')
+    def test_execute_with_non_zero_returncode(self, mock_tf, mock_json, mock_get, mock_getcwd):
+        mock_getcwd.return_value = self.config
+        mock_get.response.status_code = 200
+        self.Popen.set_default(returncode=1, stderr=b'Access Denied from AWS', stdout=b'')
+        mock_json.dump.return_value = {}
+        mock_tf.validate.return_value = True
+        mock_tf.execute.return_value = None
+
+        mc = ManifestCommand(self.config, self.parser)
+        parsed = self.parser.parse_args((['--backend', 'yaml',
+                                          '-s', 'test_stage',
+                                          '-p', 'test_product', self.deployment,
+                                          '--command', 'test_command']))
+        mc.execute(parsed, ['apply'])
+        assert 'Access Denied from AWS' in self._caplog.text

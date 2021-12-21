@@ -91,6 +91,7 @@ class TestFileSystemUtil(unittest.TestCase):
         stderr_mock = b'Test error message from AWS.'
         check_stderr(stderr_mock)
         assert 'Test error message from AWS' in self._caplog.text
+        assert 'Access Denied' not in self._caplog.text
 
     def test_check_stderr_no_facts_file(self):
         stderr_mock = b'Test error message from AWS - no facts file.'

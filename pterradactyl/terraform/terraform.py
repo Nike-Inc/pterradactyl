@@ -45,9 +45,7 @@ class Terraform(object):
             output.append(bytes(line, encoding='utf-8'))
             sys.stdout.flush()
         process.communicate()
-        if (process.returncode == 0):
-            return True
-        else:
+        if (process.returncode != 0):
             check_stderr(b''.join(output))
 
     def validate(self):
