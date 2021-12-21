@@ -1,6 +1,15 @@
-## pterradyctal setup for complex project having remote s3 backend, encrypted files and streamlined tags support.
+Pterradyctal setup for complex project having remote s3 backend, encrypted files and streamlined tags support.
+---
 
-## Creating infrastructure for a new AWS account
+Table of content
+* [Creating infrastructure for a new AWS account](#newaccount)
+* [Infra folder](#infrafolder)
+* [Creating stacks for new projects](#newstack)
+* [Remote S3 backend support](#remotebackend)
+* [Encrypted files support (sops)](#sops)
+* [Streamlined tags support](#tags)
+
+# <a name="newaccount"></a> Creating infrastructure for a new AWS account
 Before we start creating stacks for our projects, we need to define a new AWS account and create basic infrastructure for it. See [infra](../complex/vars/project/infra/) example.
 Let's call new AWS account a `common` one
 
@@ -10,16 +19,16 @@ Let's call new AWS account a `common` one
      account_family_code = {
          common     = "c"  # --> new account
          restricted = "r"
-         team1      = "e"
-         team2      = "v"
+         teama      = "a"
+         teamb      = "b"
      }
      ```
    - edit [deployment/main.tf](../complex/terraform/modules/deployment/main.tf):
      ```terraform
        account_families = {
         "_default_" = "common"   # <-- add default for common account.
-        "projecta" = "team1"
-        "projectb" = "team2"
+        "projecta" = "teama"
+        "projectb" = "teamb"
        }
       }
      ```
@@ -29,8 +38,8 @@ Let's call new AWS account a `common` one
         complex:
          family:
            c: common     # <-- new account entry
-           e: team1
-           v: team2
+           a: teama
+           b: teamb
          account_type:
            t: test
            p: production
@@ -71,15 +80,20 @@ Let's call new AWS account a `common` one
    - Again run the pt apply command:
      - `pt apply ct-infra0-uswest2`
 
-## Creating stacks for new projects
+# <a name="infrafolder"></a> Infra folder
+We are supposed to create a basic deployment to keep our stacks backend remotely on S3 bucket.
+In general, we deploy only one infra and share it among stacks.
+Take a look into [infra](../complex/vars/project/infra) folder to see what is the minimum for deploying infra stack.
+
+# <a name="newstack"></a> Creating stacks for new projects
 A below complex example of creating new projects based on AWS provider. 
 
 We have an organization named complex\
 They have 2 teams
-- team1
-    - team1 has only one project going on, named projecta and it's deployed both in test and prod account
-- team2
-    - team2 have 2 projects
+- teama
+    - teama has only one project going on, named projecta and it's deployed both in test and prod account
+- teamb
+    - teamb have 2 projects
         - projectb - deployed in test and prod
         - projectc - This is a long project to put out the projectc, it's still in test.
 
@@ -87,11 +101,11 @@ This is how the stack looks like for teams
 
 |  Team | Project  | Account Type  |  Stack Name |  Stack contents |
 |---|---|---|---|---|
-| team1 |projecta    | test         | et-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
+| teama |projecta    | test         | at-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
 |       |            | prod         | ep-projecta       | s3 (bucket-1), dynamodb(stream_enabled: true) |
-| team2 |projectb | test         | vt-projectb    | s3 (bucket-1), | 
+| teamb |projectb | test         | bt-projectb    | s3 (bucket-1), |
 |       |            | prod         | vp-projectb    | s3 (bucket-1), SQS ( fifo: false) |
-|       |projectc     | test         | vt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
+|       |projectc     | test         | bt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
 
 As you could see [here](../complex/terraform/modules). We are using much more modules than in the Simple project [here](../simple/terraform/modules)
 Additional modules used here:
@@ -106,11 +120,11 @@ Each account can have more than one version of the same stack, meaning you can h
 These different stacks could be effectively just copies of one another or could have overrides like in prod instance the size of the node or db might be different than the test account.\
 The above is a very typical setup where every account needs some common things and Prod and Test are slightly different from each other.\
 Now, its time you open up the examples directory and check out the structure for the simple project.\
-Lets checkout the state of the stack for team1 in the test accounts using the following command
+Lets checkout the state of the stack for teama in the test accounts using the following command
 
-`pt plan et-projecta0-uswest2.yaml`
+`pt plan at-projecta0-uswest2.yaml`
 
-- e - team1
+- e - teama
 - projecta - project
 - 0 - version of the stack
 - uswest2 - region of the deployment
@@ -152,11 +166,11 @@ hierarchy:
     datadir: vars
 
 # Specify acronyms here
-# This is derived from stack name e.g. vt acronym in vt-projecta-na-uswest2 stack name.
+# This is derived from stack name e.g. vt acronym in bt-projecta-na-uswest2 stack name.
 simple:
   family:
-    e: team1
-    v: team2
+    a: teama
+    b: teamb
   account_type:
     t: test
     p: production
@@ -230,12 +244,12 @@ pterradactyl: <-- version of the pterradctyl library
 
 Similarly, you can do all the terraform commands (apply, state, etc) on any of these stacks.
 
-e.g. do apply on team2 projectc project
-`pt apply vt-projectc0-useast1.yaml` 
+e.g. do apply on teamb projectc project
+`pt apply bt-projectc0-useast1.yaml` 
 
 This stack has a remote backend, type: S3.
 
-### Remote S3 backend support
+# <a name="remotebackend"></a> Remote S3 backend support
 
 To store your backend remotely, in one of your common.yaml top hierarchy file, e.g. [here](../complex/vars/common.yaml), one have to provide below information: 
 ```yaml
@@ -257,7 +271,10 @@ Variables to provide:
 Under S3 bucket '_%{account_prefix}-infra0-global-terraform_' you will see backend state file e.g. _ct-infra0-uswest2.tfstate.json_
 
 
-### Encrypted files support (sops)
+# <a name="sops"></a> Encrypted files support (sops)
+Installation guide for installing sops under Mac OS can be found [here](https://formulae.brew.sh/formula/sops)
+Installation guide for installing sops from pypi can be found [here](https://pypi.org/project/sops/)
+
 If you want to provide encrypted credentials as YAML configuration one should create separate file with .enc extension.
 E.g. [here](../complex/vars/account/projectb-prod.yaml.enc)
 
@@ -319,7 +336,7 @@ Decrypting is as simple as running below sops command:
 sops -d -i --input-type=yaml --output-type=yaml vars/account/projectb-prod.yaml.enc
 ```
 
-### Streamlined tags support.
+# <a name="tags"></a> Streamlined tags support.
 To propagate tags, metadata across all resources look at [resource_metadata](../complex/terraform/modules/resource_metadata) generic module.
 
 Any tags you want to propagate across all resources, simply create metadata.tf file like for [s3](../complex/terraform/modules/s3/metadata.tf) module.

@@ -5,7 +5,7 @@ manifest:
 
 module:
   dynamodb:
-    name: team1-test-table
+    name: teama-test-table
     metadata: ${module.deployment.metadata}
     hash_key: node_id
     stream_enabled: true

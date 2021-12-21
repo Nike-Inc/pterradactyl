@@ -101,7 +101,6 @@ Run unit tests with coverage report in HTML format.
 ```bash
 poetry run pytest --cov-report=html --cov=pterradactyl --cov-fail-under=80 tests/
 ```
-Note: keep line code coverage on at least 80% level.
 
 # <a name="examples"></a> Examples of creating new projects/prodcuts:
 
@@ -130,7 +129,7 @@ containing downloaded given Terraform version with all required plugins, and wor
 │         ├── terraform
 │         └── terraform-provider-kubectl_v1.13.1
 └── workspace
-    └── vt-projectc0-na-useast1
+    └── bt-projectc0-na-useast1
         ├── facts.json
         └── main.tf.json
 ```
