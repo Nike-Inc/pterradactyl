@@ -46,7 +46,7 @@ def check_stderr(std_err):
             b'Error: You got Access Denied from AWS (HTTP 403 status code).\n\n' +
             bytes(reset, encoding='utf-8') +
             b'You are probably authenticated to incorrect AWS account.\n' +
-            b'Check your stack refers to the actual AWS account being bind to.\n\n').decode('utf-8'))
+            b'Check if your stack workspace is in the logged in AWS account.\n\n').decode('utf-8'))
         log.error((
             b'Current AWS account alias: ' +
             bytes(yellow, encoding='utf-8') +
