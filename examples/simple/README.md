@@ -1,12 +1,12 @@
-# Simple pterradyctal setup
-
+Simple Pterradyctal setup
+---
 
 We have an organization named simple
 They have 2 teams
-- team1
-    - team1 has only one project going on, named projecta and its deployed both in test and prod account
-- team2
-    - team2 have 2 projects
+- teama
+    - teama has only one project going on, named projecta and its deployed both in test and prod account
+- teamb
+    - teamb have 2 projects
         - projectb - deployed in test and prod
         - projectc - This is a long project to put out the projectc, its still in test.
         
@@ -14,11 +14,11 @@ This is how the stack looks like for teams
 
 |  Team | Project  | Account Type  |  Stack Name |  Stack contents |
 |---|---|---|---|---|
-| team1 | projecta    | test         | et-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
+| teama | projecta    | test         | at-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
 |       |            | prod         | ep-projecta       | s3 (bucket-1), dynamodb(stream_enabled: true) |
-| team2 | projectb | test         | vt-projectb    | s3 (bucket-1), | 
+| teamb | projectb | test         | bt-projectb    | s3 (bucket-1), | 
 |       |            | prod         | vp-projectb    | s3 (bucket-1), SQS ( fifo: false) |
-|       |projectc     | test         | vt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
+|       |projectc     | test         | bt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
 
 
 
@@ -26,11 +26,11 @@ Each account can have more than one version of the same stack, meaning you can h
 These different stacks could be effectively just copies of one another or could have overrides like in prod instance the size of the node or db might be different than the test account.\
 The above is a very typical setup where every account needs some common things and Prod and Test are slightly different from each other.\
 Now, its time you open up the examples directory and check out the structure for the simple project.\
-lets checkout the state of the stack for team1 in the test accounts using the following command
+lets checkout the state of the stack for teama in the test accounts using the following command
 
-`pt plan et-projecta0-na-uswest2.yaml`
+`pt plan at-projecta0-na-uswest2.yaml`
 
-- e - team1
+- e - teama
 - t - test environment
 - projecta - project name
 - 0 - version of the stack
@@ -72,11 +72,11 @@ hierarchy:
     datadir: vars
 
 # Specify acronyms here
-# This is derived from stack name e.g. vt acronym in vt-projecta-na-uswest2 stack name.
+# This is derived from stack name e.g. vt acronym in bt-projecta-na-uswest2 stack name.
 simple:
   family:
-    e: team1
-    v: team2
+    a: teama
+    b: teamb
   account_type:
     t: test
     p: production
@@ -112,7 +112,7 @@ facter:
   - shell:
       git_sha: git rev-parse HEAD
       aws_account_alias:
-        command: echo "team1-test" # e.g current AWS alias: `aws iam list-account-aliases`
+        command: echo "teama-test" # e.g current AWS alias: `aws iam list-account-aliases`
         #jsonpath: $.AccountAliases[0]
 
     # Facts set from the value of an environment variable
@@ -150,7 +150,7 @@ pterradactyl: <-- version of the pterradctyl library
 
 Similarly, you can do all the terraform commands (apply, state, etc) on any of these stacks.
 
-e.g. do apply on team2 projectc project
-`pt apply vt-projectc0-na-useast1` 
+e.g. do apply on teamb projectc project
+`pt apply bt-projectc0-na-useast1` 
 
 This stack does not have a remote bucket or encrypted credentials or even a streamlined tags support.

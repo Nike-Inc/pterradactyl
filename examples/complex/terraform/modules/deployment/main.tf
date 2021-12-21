@@ -1,8 +1,8 @@
 locals {
   account_families = {
     "_default_" = "common"
-    "projecta" = "team1"
-    "projectb" = "team2"
+    "projecta" = "teama"
+    "projectb" = "teamb"
   }
 }
 
