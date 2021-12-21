@@ -4,7 +4,7 @@ manifest:
 
 module:
   dynamodb:
-    name: team1-test-table
+    name: teama-test-table
     hash_key: node_id
     stream_enabled: false
     attributes:

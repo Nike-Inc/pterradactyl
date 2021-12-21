@@ -23,12 +23,12 @@ hiera:
     datadir: vars
 
 simple:
-# This mapping allows us to get family and account_type form stack name: e.g. vt-projecta0-uswest2
-# vt refers to team1 and test environment.
+# This mapping allows us to get family and account_type form stack name: e.g. bt-projecta0-uswest2
+# vt refers to teama and test environment.
   family:
     c: common
-    e: team1
-    v: team2
+    a: teama
+    b: teamb
   account_type:
     t: test
     p: production

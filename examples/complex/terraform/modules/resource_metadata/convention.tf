@@ -5,8 +5,8 @@ locals {
   account_family_code = {
     common     = "c"
     restricted = "r"
-    team1      = "e"
-    team2      = "v"
+    teama      = "a"
+    teamb      = "b"
   }
 
   # defined by naming convention

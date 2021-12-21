@@ -5,14 +5,14 @@ manifest:
     - s3 as not_basic_bucket
 module:
   basic_bucket:
-    name: vt-projectc-bucket
+    name: bt-projectc-bucket
   not_basic_bucket:
-    name: vt-projectc-bucket-not-basic
+    name: bt-projectc-bucket-not-basic
   sqs:
-    name: vt-projectc-sqs
+    name: bt-projectc-sqs
     fifo_queue: true
   projectc_table:
-    name: team2-projectc-table
+    name: teamb-projectc-table
     stream_enabled: true
     stream_view_type: "NEW_AND_OLD_IMAGES"
     hash_key: node_id

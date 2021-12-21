@@ -1,0 +1,14 @@
+{
+  "deployment": "ct-integrationtests0-na-uswest2",
+  "family": "common",
+  "account_type": "test",
+  "product": "integrationtests",
+  "n": "0",
+  "serving_region": "na",
+  "region": "us-west-2",
+  "git_sha": "6f32ec4e1d82aa2243091",
+  "aws_account_alias": "restricted-prod",
+  "deploy_user": "testuser",
+  "account_prefix": "ct",
+  "state_prefix": "ct-integrationtests0-na-uswest2.tfstate.json"
+}
