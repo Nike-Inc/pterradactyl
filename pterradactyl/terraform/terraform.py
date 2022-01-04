@@ -15,7 +15,9 @@ from pterradactyl.util import memoize
 from pterradactyl.util.download import download
 from pterradactyl.util.filesystem import ensure_executable, ensure_directory, sync_local_tf_plugins, check_stderr
 
-logging.basicConfig(level=logging.INFO, encoding='utf-8', format=None)
+LOG_FORMAT = '[%(asctime)s] [%(levelname)s] [%(process)s] [%(name)s] ' \
+             '[%(filename)s/%(funcName)s:%(lineno)d]: %(message)s'
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
 
