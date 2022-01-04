@@ -34,5 +34,3 @@ module:
   basic_bucket:
     name: common-bucket
     metadata: ${module.deployment.metadata}
-
-
