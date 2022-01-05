@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pterradactyl"
-version = "1.2.9"
+version = "1.2.10"
 description = "hiera-inspired terraform wrapper"
 authors = ["Rob King <rob.king@nike.com>",
            "Vincent Liu <vincent.liu@nike.com>"

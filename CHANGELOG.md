@@ -1,10 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+`pterradactyl` adheres to [Semantic Versioning](http://semver.org/).
 
 #### 1.x Releases
-- `1.2.x` Releases - [1.2.7](#127)
-- `1.2.x` Releases - [1.2.8](#128)
+- `1.2.x` Releases - [1.2.7](#127) | [1.2.8](#128) | [1.2.10](#1210)
 
 ---
 ## Unreleased
@@ -20,12 +20,16 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 
 ---
+## 1.2.10
 
-## 1.2.7
+#### Fixed
+- Fixed backward compatibility issue caused due to unknown parameters in logging.BasicConfig introduced in python 3.9+.
+  - Fixed by [Mohamed Abdul Huq Ismail](https://github.com/aisma7_nike) in Pull Request [#5](https://github.com/Nike-Inc/pterradactyl/pull/5)
 
 #### Added
-- Added Pterradactyl documentation and init Pterradactyl version for OSS
-  - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)
+- Added new lines in examples and test configs.
+  - Added by [Mohamed Abdul Huq Ismail](https://github.com/aisma7_nike) in Pull Request [#5](https://github.com/Nike-Inc/pterradactyl/pull/5)
+
 
 ---
 ## 1.2.8
@@ -39,4 +43,12 @@ All notable changes to this project will be documented in this file.
   - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)
 - Fix relative links to absolute urls in README.md
   - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)
+
+---
+## 1.2.7
+
+#### Added
+- Added Pterradactyl documentation and init Pterradactyl version for OSS
+  - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)
+
 ---

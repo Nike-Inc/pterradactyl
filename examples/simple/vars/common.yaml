@@ -10,5 +10,3 @@ manifest:
 module:
   basic_bucket:
     name: common-bucket
-    
-
