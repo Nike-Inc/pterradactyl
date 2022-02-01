@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 `pterradactyl` adheres to [Semantic Versioning](http://semver.org/).
 
 #### 1.x Releases
-- `1.2.x` Releases - [1.2.7](#127) | [1.2.8](#128) | [1.2.10](#1210)
+- `1.2.x` Releases - [1.2.7](#127) | [1.2.8](#128) | [1.2.10](#1210) | [1.2.11](#1211) 
 
 ---
 ## Unreleased
@@ -18,6 +18,14 @@ All notable changes to this project will be documented in this file.
 #### Removed
 
 #### Fixed
+
+
+---
+## 1.2.11
+
+#### Fixed
+- Allow non-semantic versioning in the terraform provider plugin configuration.
+  - Fixed by [Marcin Zalewski](https://github.com/marcinjzalewski) in Pull Request [#6](https://github.com/Nike-Inc/pterradactyl/pull/6)
 
 ---
 ## 1.2.10
