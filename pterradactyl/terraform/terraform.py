@@ -173,7 +173,7 @@ class Terraform(object):
             repo=repo
         ), headers=self.auth_headers.get(domain)).json()
         for r in releases_res:
-            version = r.get('tag_name').split('v')[1]
+            version = r.get("tag_name")[1:] if r.get("tag_name").startswith("v") else r.get("tag_name")
             if Version(version) in spec and Version(version) > Version(latest_release[0]):
                 for a in r['assets']:
                     asset_url = a['browser_download_url']
