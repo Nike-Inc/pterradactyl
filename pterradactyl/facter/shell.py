@@ -33,6 +33,7 @@ class ShellFacter(BaseFacter):
 
   def __run_fact(self, spec, facts):
     script = spec['command'] if type(spec) is dict else spec
+    # We are copying the facts into another variable so that we don't merge the env vars to the pterradactyl facts, but only use them for the subprocess call
     env_vars = facts.copy()
     return self.__postprocess(subprocess.run(script, shell=True, text=True, env=env_vars.update(os.environ), stdout=subprocess.PIPE).stdout.rstrip(), spec)
 
