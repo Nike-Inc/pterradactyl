@@ -1,4 +1,5 @@
 import unittest
+import os
 import pterradactyl.facter.shell as shell
 
 
@@ -36,3 +37,21 @@ class TestFacterShellCommands(unittest.TestCase):
         output_facts = shell.ShellFacter(shell_facter_data).facts()
         assert output_facts.get('single_command') == "single_command"
         assert output_facts.get('json_parse_command_output') == "world1"
+
+    def test_check_context_env_vars(self):
+        os.environ['TEST_ENV'] = 'test'
+        shell_facter_data = {
+            'single_command': 'echo \'single_command\'',
+            'json_parse_command_output': {
+                'command': 'echo \'{"hello":["world1", "world2"] }\'',
+                'jsonpath': '$.hello[0]',
+                'data_json': '{"hello":["world1", "world2"] }'
+            },
+            'json_env_vars_output': {
+                'command': 'env'
+            }
+        }
+        output_facts = shell.ShellFacter(shell_facter_data).facts()
+        assert output_facts.get('single_command') == "single_command"
+        assert output_facts.get('json_parse_command_output') == "world1"
+        assert 'TEST_ENV=test' in output_facts.get('json_env_vars_output')
