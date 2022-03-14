@@ -1,6 +1,7 @@
 import subprocess
 import json
 import jsonpath_ng
+import os
 
 from .base import BaseFacter
 
@@ -32,7 +33,8 @@ class ShellFacter(BaseFacter):
 
   def __run_fact(self, spec, facts):
     script = spec['command'] if type(spec) is dict else spec
-    return self.__postprocess(subprocess.run(script, shell=True, text=True, env=facts, stdout=subprocess.PIPE).stdout.rstrip(), spec)
+    env_vars = facts.copy()
+    return self.__postprocess(subprocess.run(script, shell=True, text=True, env=env_vars.update(os.environ), stdout=subprocess.PIPE).stdout.rstrip(), spec)
 
   def facts(self, facts={}):
     return {
