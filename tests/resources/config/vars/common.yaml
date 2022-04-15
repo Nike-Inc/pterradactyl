@@ -20,6 +20,17 @@ module:
   deployment:
     product: '%{product}'
     n: '%{n}'
+    account_families:
+      'unrestricted-account': 'unrestricted'
+      'external-account': 'external'
+      '_default_': 'common' 
+    account_family_code: 
+      common: 'c'
+      external: 'e'
+      unrestricted: 'u'
+    account_type_code: 
+      test: 't'
+      prod: 'p'
 
   terraform:
     metadata: ${module.deployment.metadata}

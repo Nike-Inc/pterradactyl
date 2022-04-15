@@ -6,7 +6,7 @@ from mock import patch
 import argparse
 import shutil
 import json
-
+import glob
 from testfixtures import Replacer
 from testfixtures.popen import MockPopen
 
@@ -25,9 +25,9 @@ class TestManifest(unittest.TestCase):
         self.facts_invalid = os.path.join(self.base_dir, 'facts_invalid.yaml')
         self.pterra_temp_dir = os.path.join(self.base_dir, '.pterradactyl')
         self.tf_exec_file = os.path.join(
-            self.pterra_temp_dir, 'terraform', '0.13.1', 'terraform')
+        self.pterra_temp_dir, 'terraform', '0.13.1', 'terraform')
         self.tf_provider_kubectl_file = os.path.join(
-            self.pterra_temp_dir, 'terraform', '0.13.1', 'terraform-provider-kubectl_v1.13.1')
+            self.pterra_temp_dir, 'terraform', '0.13.1', 'terraform-provider-kubectl_*')
         self.facts_json_file = os.path.join(
             self.pterra_temp_dir, 'workspace', self.deployment, 'facts.json')
         self.main_tf_json_file = os.path.join(
@@ -87,7 +87,7 @@ class TestManifest(unittest.TestCase):
         # Verify directory structure was created with downloaded plugins (mocks)
         assert os.path.isdir(self.pterra_temp_dir)
         assert os.path.isfile(self.tf_exec_file)
-        assert os.path.isfile(self.tf_provider_kubectl_file)
+        assert glob.glob(self.tf_provider_kubectl_file)
         assert os.path.isfile(self.main_tf_json_file)
         assert os.path.isfile(self.facts_json_file)
         self.assertDictEqual(actual_facts, json.load(
