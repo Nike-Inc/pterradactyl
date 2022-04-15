@@ -1,4 +1,11 @@
-Pterradyctal setup for complex project having remote s3 backend, encrypted files and streamlined tags support.
+# Complex/Production Ready Pterradyctal setup
+
+
+This example has following additional capabilities in addition to the simple example.
+* S3 backend
+* Encrypted secrets
+* Streamlined tags support
+
 ---
 
 Table of content
@@ -14,37 +21,23 @@ Before we start creating stacks for our projects, we need to define a new AWS ac
 Let's call new AWS account a `common` one
 
 1. Create mapping for your new account:
-   - edit [convention.tf](../complex/terraform/modules/resource_metadata/convention.tf):
-     ```terraform
-     account_family_code = {
-         common     = "c"  # --> new account
-         restricted = "r"
-         teama      = "a"
-         teamb      = "b"
-     }
-     ```
-   - edit [deployment/main.tf](../complex/terraform/modules/deployment/main.tf):
-     ```terraform
-       account_families = {
-        "_default_" = "common"   # <-- add default for common account.
-        "projecta" = "teama"
-        "projectb" = "teamb"
-       }
-      }
-     ```
-2. Create and classify an entry for your account.
-   - edit [pterra.yaml](../complex/pterra.yaml)
-        ```yaml
-        complex:
-         family:
-           c: common     # <-- new account entry
-           a: teama
-           b: teamb
-         account_type:
-           t: test
-           p: production
-   
-        ```
+   - edit [common.yaml](../complex/vars/common.yaml):
+    ```
+      deployment:
+    product: '%{product}'
+    n: '%{n}'
+    account_families:
+      'teama-aws-account': 'teama'
+      'teamb-aws-account': 'teamb'
+      '_default_': 'common' # <-- add default for common account.
+    account_family_code: 
+      teama: 'a'
+      teamb: 'a'
+      common: 'c' # --> new account
+    account_type_code: 
+      test: 't'
+      prod: 'p'
+    ```
 
 3. Add your account ID.
    - edit [common.yaml](../complex/vars/common.yaml)

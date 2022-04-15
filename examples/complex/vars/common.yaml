@@ -21,6 +21,19 @@ module:
   deployment:
     product: '%{product}'
     n: '%{n}'
+    account_families:
+      'teama-aws-account': 'teama'
+      'teamb-aws-account': 'teamb'
+      '_default_': 'common' 
+    account_family_code: 
+      teama: 'a'
+      teamb: 'a'
+      common: 'c'
+    account_type_code: 
+      test: 't'
+      prod: 'p'
+
+
 
   known_roles:
     roles:
