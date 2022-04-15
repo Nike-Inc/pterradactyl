@@ -23,7 +23,7 @@ Let's call new AWS account a `common` one
 1. Create mapping for your new account:
    - edit [common.yaml](../complex/vars/common.yaml):
     ```
-      deployment:
+  deployment:
     product: '%{product}'
     n: '%{n}'
     account_families:
