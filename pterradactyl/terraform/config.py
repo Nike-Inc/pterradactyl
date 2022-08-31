@@ -40,6 +40,7 @@ class TerraformConfig(object):
         self.cwd = cwd
         self.terraform_config = config.get('terraform')
         self.module_path = lookup(self.terraform_config, 'module_path', default=[])
+        self.module_ref = lookup(self.terraform_config, 'module_ref', default="master")
         self.root_dir = config.dir
         context = {**facts, **{'facts': facts}}
         self.hiera = phiera.Hiera(config.get('hiera'), context=context, base_path=config.dir)
@@ -78,12 +79,16 @@ class TerraformConfig(object):
 
         src_module = module[0] if type(module) == tuple else module
         for module_dir in self.module_path:
-            module_path = os.path.join(module_dir, src_module)
-            if os.path.isdir(module_path):
-                rel_path = os.path.relpath(os.path.abspath(module_path), self.cwd)
-                # terraform local modules must start with . even when relative to cwd
-                if not rel_path.startswith('.'):
-                    rel_path = os.path.join('.', rel_path)
-                spec['source'] = rel_path
+            if ("github" in module_dir):
+                module_github_path = module_dir + '/' + src_module + "?ref=" + self.module_ref
+                spec['source'] = module_github_path
+            else:
+                module_path = os.path.join(module_dir, src_module)
+                if os.path.isdir(module_path):
+                    rel_path = os.path.relpath(os.path.abspath(module_path), self.cwd)
+                    # terraform local modules must start with . even when relative to cwd
+                    if not rel_path.startswith('.'):
+                        rel_path = os.path.join('.', rel_path)
+                    spec['source'] = rel_path
         # TODO - exception handling
         return spec
