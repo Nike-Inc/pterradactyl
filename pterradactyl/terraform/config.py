@@ -40,12 +40,12 @@ class TerraformConfig(object):
         self.cwd = cwd
         self.terraform_config = config.get('terraform')
         self.module_path = lookup(self.terraform_config, 'module_path', default=[])
-        self.module_ref = lookup(self.terraform_config, 'module_ref', default="master")
         self.root_dir = config.dir
         context = {**facts, **{'facts': facts}}
         self.hiera = phiera.Hiera(config.get('hiera'), context=context, base_path=config.dir)
 
-        manifest = self.hiera.get('manifest', {'modules': []}, merge=dict, merge_deep=True)
+        manifest = self.hiera.get('manifest', {'version': '', 'modules': []}, merge=dict, merge_deep=True)
+        self.module_ref = manifest['version']
         self.modules = self.alias_modules(manifest['modules'])
 
     def alias_modules(self, modules):
