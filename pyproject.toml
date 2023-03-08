@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pterradactyl"
-version = "1.2.11"
+version = "1.2.14"
 description = "hiera-inspired terraform wrapper"
 authors = ["Rob King <rob.king@nike.com>",
            "Vincent Liu <vincent.liu@nike.com>"
@@ -22,6 +22,7 @@ python = "^3.7 || ^3.8"
 python-interface = "^1.5.3"
 pyyaml = "^5.3.1"
 jinja2 = "^2.11.1"
+MarkupSafe = "2.0.1"
 appdirs = "^1.4.3"
 jsonpath-ng = "^1.5.1"
 semantic_version = "^2.8.4"

@@ -64,4 +64,4 @@ class LookupCommand(AbstractBaseCommand):
         hiera = phiera.Hiera(config.get('hiera'), context=facts, base_path=config.dir)
         data = hiera.get(lookups[0], {}, merge=dict, merge_deep=True)
         yaml.add_representer(phiera.util.LookupDict, SafeRepresenter.represent_dict)
-        log.info(yaml.dump(dict(data), explicit_start=True))
+        print(yaml.dump(dict(data), explicit_start=True))

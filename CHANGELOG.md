@@ -60,3 +60,8 @@ All notable changes to this project will be documented in this file.
   - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)
 
 ---
+
+## 1.2.14
+#### Fixed
+- Fix replace log.info to print as it adds additional line in yaml file.
+  - Added by [Marcin Zalewski](https://github.com/marcinjzalewski)

@@ -54,7 +54,3 @@ terraform:
 pterradactyl:
   version: '>=1.2.0'
 
-module:
-  deployment:
-    product: '%{product}'
-    n: '%{n}'

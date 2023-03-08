@@ -3,34 +3,34 @@ Simple Pterradyctal setup
 
 We have an organization named simple
 They have 2 teams
-- teama
-    - teama has only one project going on, named projecta and its deployed both in test and prod account
-- teamb
-    - teamb have 2 projects
-        - projectb - deployed in test and prod
-        - projectc - This is a long project to put out the projectc, its still in test.
+- team-a
+    - team-a has only one project going on, named project-a and its deployed both in test and prod account
+- team-b
+    - team-b have 2 projects
+        - project-b - deployed in test and prod
+        - project-c - This is a long project to put out the project-c, its still in test.
         
 This is how the stack looks like for teams
 
 |  Team | Project  | Account Type  |  Stack Name |  Stack contents |
 |---|---|---|---|---|
-| teama | projecta    | test         | at-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
+| team-a | project-a    | test         | at-projecta       | s3 (bucket-1), dynamodb(stream_enabled: false) |
 |       |            | prod         | ep-projecta       | s3 (bucket-1), dynamodb(stream_enabled: true) |
-| teamb | projectb | test         | bt-projectb    | s3 (bucket-1), | 
+| team-b | project-b | test         | bt-projectb    | s3 (bucket-1), | 
 |       |            | prod         | vp-projectb    | s3 (bucket-1), SQS ( fifo: false) |
-|       |projectc     | test         | bt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
+|       |project-c     | test         | bt-projectc        | s3 (bucket-1), s3 (bucket-2), dynamodb(stream_enabled: false), SQS ( fifo: true) |
 
 
 
-Each account can have more than one version of the same stack, meaning you can have intergation stack running in the test account. \
+Each account can have more than one version of the same stack, meaning you can have integration stack running in the test account. \
 These different stacks could be effectively just copies of one another or could have overrides like in prod instance the size of the node or db might be different than the test account.\
 The above is a very typical setup where every account needs some common things and Prod and Test are slightly different from each other.\
 Now, its time you open up the examples directory and check out the structure for the simple project.\
-lets checkout the state of the stack for teama in the test accounts using the following command
+lets checkout the state of the stack for `team-a` in the test accounts using the following command
 
 `pt plan at-projecta0-na-uswest2.yaml`
 
-- e - teama
+- a - team-a
 - t - test environment
 - projecta - project name
 - 0 - version of the stack
