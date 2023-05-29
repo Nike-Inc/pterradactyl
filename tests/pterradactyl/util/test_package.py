@@ -1,4 +1,5 @@
 import unittest
+
 from pterradactyl.util.package import entry_points
 
 

@@ -1,5 +1,6 @@
 import unittest
-from pterradactyl.util import as_list, memoize, merge_dict, lookup
+
+from pterradactyl.util import as_list, lookup, memoize, merge_dict
 
 
 class TestCommonUtil(unittest.TestCase):

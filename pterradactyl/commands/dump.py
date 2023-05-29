@@ -1,9 +1,7 @@
-import os
 import yaml
 
 from pterradactyl.config import Config
 from pterradactyl.facter import Facter
-from pterradactyl.terraform.terraform import Terraform
 from pterradactyl.terraform.config import TerraformConfig
 
 from .base import AbstractBaseCommand

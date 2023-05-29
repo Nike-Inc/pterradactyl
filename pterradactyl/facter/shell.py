@@ -1,7 +1,8 @@
-import subprocess
 import json
-import jsonpath_ng
 import os
+import subprocess
+
+import jsonpath_ng
 
 from .base import BaseFacter
 

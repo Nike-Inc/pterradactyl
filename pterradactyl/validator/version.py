@@ -1,8 +1,8 @@
 import logging
-import pterradactyl
 
 from semantic_version import SimpleSpec, Version
 
+import pterradactyl
 from pterradactyl.config import Config
 from pterradactyl.validator.base import BaseValidator
 

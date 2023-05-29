@@ -1,10 +1,13 @@
-import unittest
-import os
-import pytest
 import logging
+import os
+import unittest
+from unittest.mock import patch
 
-from pterradactyl.util.filesystem import ensure_directory, ensure_executable, sync_local_tf_plugins, get_target_path, check_stderr
-from mock import patch
+import pytest
+
+from pterradactyl.util.filesystem import (check_stderr, ensure_directory,
+                                          ensure_executable, get_target_path,
+                                          sync_local_tf_plugins)
 
 LOGGER = logging.getLogger(__name__)
 

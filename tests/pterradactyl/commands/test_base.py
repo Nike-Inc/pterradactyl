@@ -1,4 +1,5 @@
 import unittest
+
 from pterradactyl.commands.base import AbstractBaseCommand
 
 

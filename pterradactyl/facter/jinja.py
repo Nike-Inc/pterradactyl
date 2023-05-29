@@ -1,6 +1,9 @@
-from jinja2 import Environment
-from .base import BaseFacter
 from functools import reduce
+
+from jinja2 import Environment
+
+from .base import BaseFacter
+
 
 class JinjaFacter(BaseFacter):
 

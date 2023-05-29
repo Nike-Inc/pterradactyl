@@ -1,8 +1,5 @@
-import os
-import re
+from pterradactyl.util import package
 
-from pterradactyl.config import Config
-from pterradactyl.util import lookup, package, merge_dict
 
 class Validator(object):
 

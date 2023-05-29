@@ -1,8 +1,11 @@
 import re
+
 import phiera
 from jinja2 import Environment
-from .base import BaseFacter
+
 from pterradactyl.config import Config
+
+from .base import BaseFacter
 
 
 class RegexFacter(BaseFacter):

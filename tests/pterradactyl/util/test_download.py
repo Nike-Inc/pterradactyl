@@ -1,15 +1,16 @@
-import unittest
 import os
-
-import requests.exceptions
-
-from pterradactyl.util.download import extract_from_zip, extract_from_tar, download
-from mock import patch
-from zipfile import ZipFile
 import tarfile
+import unittest
 from os.path import basename
+from unittest.mock import patch
+from zipfile import ZipFile
+
 import pytest
+import requests.exceptions
 import responses
+
+from pterradactyl.util.download import (download, extract_from_tar,
+                                        extract_from_zip)
 
 
 class TestDownloadUtil(unittest.TestCase):
@@ -65,7 +66,6 @@ class TestDownloadUtil(unittest.TestCase):
                 responses.add(responses.GET, url,
                               body=tar_file.read(), status=200,
                               content_type='application/tar',
-                              stream=True,
                               adding_headers={'Transfer-Encoding': 'chunked'})
                 download(url, self.base_path, self.tar_filename)
 
@@ -77,6 +77,5 @@ class TestDownloadUtil(unittest.TestCase):
                 responses.add(responses.GET, url,
                               body=zip_file.read(), status=404,
                               content_type='application/octet-stream',
-                              stream=True,
                               adding_headers={'Transfer-Encoding': 'chunked'})
                 download(url, self.base_path, self.tar_filename)

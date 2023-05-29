@@ -1,6 +1,7 @@
 import unittest
-from pterradactyl.facter.base import BaseFacter
+
 from pterradactyl.facter import Facter
+from pterradactyl.facter.base import BaseFacter
 
 
 class TestFacterShellCommands(unittest.TestCase):

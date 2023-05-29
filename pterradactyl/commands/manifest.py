@@ -1,10 +1,8 @@
-import os
-
 from pterradactyl.config import Config
 from pterradactyl.facter import Facter
-from pterradactyl.validator import Validator
-from pterradactyl.terraform.terraform import Terraform
 from pterradactyl.terraform.config import TerraformConfig
+from pterradactyl.terraform.terraform import Terraform
+from pterradactyl.validator import Validator
 
 from .base import AbstractBaseCommand
 

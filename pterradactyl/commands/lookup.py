@@ -1,15 +1,11 @@
-import os
-import yaml
-import phiera
 import logging
+import os
 
+import phiera
+import yaml
 from yaml.representer import SafeRepresenter
 
 from pterradactyl.config import Config
-from pterradactyl.facter import Facter
-from pterradactyl.validator import Validator
-from pterradactyl.terraform.terraform import Terraform
-from pterradactyl.terraform.config import TerraformConfig
 
 from .base import AbstractBaseCommand
 

@@ -1,7 +1,8 @@
-import os
-import yaml
 import logging
+import os
 import subprocess
+
+import yaml
 from appdirs import AppDirs
 from phiera import Merge
 

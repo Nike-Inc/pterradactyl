@@ -1,5 +1,5 @@
 from pterradactyl.config import Config
-from pterradactyl.util import lookup, package, merge_dict
+from pterradactyl.util import package
 
 
 class Facter(object):

@@ -1,10 +1,9 @@
-import os
-import re
 from argparse import Action
 
-from .base import BaseFacter
-from pterradactyl.config import Config
 from pterradactyl.util import as_list, lookup
+
+from .base import BaseFacter
+
 
 class ArgumentsFacter(BaseFacter):
 

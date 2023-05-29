@@ -1,14 +1,16 @@
-import os
-import unittest
-import pytest
-from pterradactyl.commands.manifest import ManifestCommand
-from mock import patch
 import argparse
-import shutil
-import json
 import glob
+import json
+import os
+import shutil
+import unittest
+from unittest.mock import patch
+
+import pytest
 from testfixtures import Replacer
 from testfixtures.popen import MockPopen
+
+from pterradactyl.commands.manifest import ManifestCommand
 
 
 class TestManifest(unittest.TestCase):

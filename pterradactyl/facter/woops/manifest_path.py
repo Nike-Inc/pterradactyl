@@ -4,10 +4,14 @@
 # [Clang 10.0.1 (clang-1001.0.46.3)]
 # Embedded file name: /Users/rmk/Projects/pterra/pterradactyl/pterradactyl/facter/manifest_path.py
 # Size of source mod 2**32: 1517 bytes
-import os, re
+import os
+import re
 from argparse import Action
-from .base import BaseFacter
+
 from pterradactyl.config import Config
+
+from .base import BaseFacter
+
 
 class ManifestPathFacter(BaseFacter):
 
