@@ -10,7 +10,7 @@ from argparse import Action
 
 from pterradactyl.config import Config
 
-from .base import BaseFacter
+from pterradactyl.facter.base import BaseFacter
 
 
 class ManifestPathFacter(BaseFacter):

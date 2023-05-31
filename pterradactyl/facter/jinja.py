@@ -2,7 +2,7 @@ from functools import reduce
 
 from jinja2 import Environment
 
-from .base import BaseFacter
+from pterradactyl.facter.base import BaseFacter
 
 
 class JinjaFacter(BaseFacter):

@@ -2,7 +2,7 @@ from argparse import Action
 
 from pterradactyl.util import as_list, lookup
 
-from .base import BaseFacter
+from pterradactyl.facter.base import BaseFacter
 
 
 class ArgumentsFacter(BaseFacter):

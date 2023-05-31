@@ -4,7 +4,7 @@ from pterradactyl.config import Config
 from pterradactyl.facter import Facter
 from pterradactyl.terraform.config import TerraformConfig
 
-from .base import AbstractBaseCommand
+from pterradactyl.commands.base import AbstractBaseCommand
 
 
 class AbstractDumpCommand(AbstractBaseCommand):

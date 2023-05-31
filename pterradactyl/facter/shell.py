@@ -4,7 +4,7 @@ import subprocess
 
 import jsonpath_ng
 
-from .base import BaseFacter
+from pterradactyl.facter.base import BaseFacter
 
 
 def jsonpath(data, path):

@@ -7,7 +7,7 @@ from yaml.representer import SafeRepresenter
 
 from pterradactyl.config import Config
 
-from .base import AbstractBaseCommand
+from pterradactyl.commands.base import AbstractBaseCommand
 
 log = logging.getLogger(__name__)
 
