@@ -1,7 +1,8 @@
 import unittest
+from unittest.mock import patch
+
 from pterradactyl.validator import Validator
 from pterradactyl.validator.base import BaseValidator
-from mock import patch
 
 
 class TestValidator(unittest.TestCase):

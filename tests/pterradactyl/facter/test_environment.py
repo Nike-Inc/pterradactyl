@@ -1,8 +1,10 @@
-import unittest
 import os
-import pterradactyl.facter.environment as environment
-from mock import patch
+import unittest
+from unittest.mock import patch
+
 import pytest
+
+import pterradactyl.facter.environment as environment
 
 
 class TestFacterEnvironment(unittest.TestCase):

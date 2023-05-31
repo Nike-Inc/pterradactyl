@@ -1,7 +1,7 @@
 import unittest
+from unittest.mock import patch
+
 from pterradactyl.commands.env import EnvCommand
-from mock import patch
-import pytest
 
 
 class TestEnvCommands(unittest.TestCase):

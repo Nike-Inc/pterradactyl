@@ -1,19 +1,22 @@
-import platform
+import glob
+import json
+import logging
 import os
+import platform
 import re
 import subprocess
 import sys
-import json
-import glob
-import requests
-import logging
-
 from pathlib import Path
+
+import requests
 from semantic_version import SimpleSpec, Version
+
 from pterradactyl.config import Config
 from pterradactyl.util import memoize
 from pterradactyl.util.download import download
-from pterradactyl.util.filesystem import ensure_executable, ensure_directory, sync_local_tf_plugins, check_stderr
+from pterradactyl.util.filesystem import (check_stderr, ensure_directory,
+                                          ensure_executable,
+                                          sync_local_tf_plugins)
 
 LOG_FORMAT = '[%(asctime)s] [%(levelname)s] [%(process)s] [%(name)s] ' \
              '[%(filename)s/%(funcName)s:%(lineno)d]: %(message)s'
@@ -128,7 +131,7 @@ class Terraform(object):
     def ensure_plugin(self, repo, owner, version, domain="github.com"):
         for plugin_bin in os.listdir(self.bin_dir):
             if plugin_bin.startswith(repo):
-                found_version = re.search('v(\d+.\d+.\d+)', plugin_bin)
+                found_version = re.search(r'v(\d+.\d+.\d+)', plugin_bin)
                 if found_version and \
                         Version(found_version.groups()[0]) in SimpleSpec(version):
                     break

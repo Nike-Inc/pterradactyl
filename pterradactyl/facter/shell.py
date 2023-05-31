@@ -1,9 +1,10 @@
-import subprocess
 import json
-import jsonpath_ng
 import os
+import subprocess
 
-from .base import BaseFacter
+import jsonpath_ng
+
+from pterradactyl.facter.base import BaseFacter
 
 
 def jsonpath(data, path):

@@ -1,5 +1,6 @@
-import unittest
 import os
+import unittest
+
 import pterradactyl.facter.shell as shell
 
 

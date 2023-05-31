@@ -1,9 +1,7 @@
 import argparse
-import pkg_resources
 import os
 
 import pterradactyl
-
 from pterradactyl.config import Config
 from pterradactyl.util import package
 

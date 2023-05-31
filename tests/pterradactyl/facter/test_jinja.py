@@ -1,4 +1,5 @@
 import unittest
+
 import pterradactyl.facter.jinja as jinja
 
 

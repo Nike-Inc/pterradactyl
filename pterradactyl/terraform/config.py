@@ -1,12 +1,11 @@
+import json
 import os
 import re
-import json
-import yaml
+
 import phiera
 
 from pterradactyl.config import Config
-from pterradactyl.util import merge_dict, lookup
-
+from pterradactyl.util import lookup
 
 # XXX - this class is too "clever" for its own good. it's hard to follow.
 

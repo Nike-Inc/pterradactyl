@@ -1,10 +1,12 @@
+import logging
 import os
 import unittest
-import logging
+from unittest.mock import patch
+
 import pytest
-from pterradactyl.config import Config
 import yaml
-from mock import patch
+
+from pterradactyl.config import Config
 
 
 class TestPterradactylConfig(unittest.TestCase):

@@ -1,9 +1,11 @@
-import unittest
-from pterradactyl.commands.lookup import LookupCommand
-from mock import patch
-import os
 import argparse
+import os
+import unittest
+from unittest.mock import patch
+
 import pytest
+
+from pterradactyl.commands.lookup import LookupCommand
 
 
 class TestLookupCommands(unittest.TestCase):

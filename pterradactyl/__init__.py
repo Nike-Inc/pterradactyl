@@ -1,3 +1,3 @@
-import pkg_resources
+import importlib
 
-__version__ = pkg_resources.get_distribution(__name__).version
+__version__ = importlib.metadata.version(__name__)

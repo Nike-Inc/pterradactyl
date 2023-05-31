@@ -1,8 +1,7 @@
-import os
-import stat
 import json
 import logging
-
+import os
+import stat
 from pathlib import Path
 from shutil import copy
 

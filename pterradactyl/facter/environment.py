@@ -1,5 +1,7 @@
 import os
-from .base import BaseFacter
+
+from pterradactyl.facter.base import BaseFacter
+
 
 class EnvironmentFacter(BaseFacter):
 

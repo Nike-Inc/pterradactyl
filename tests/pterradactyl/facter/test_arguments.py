@@ -1,8 +1,8 @@
 import argparse
 import unittest
-import pterradactyl.facter.arguments as arguments
-from mock import patch
 from unittest.mock import patch
+
+import pterradactyl.facter.arguments as arguments
 
 
 class TestFacterArguments(unittest.TestCase):
