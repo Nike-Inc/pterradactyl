@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 `pterradactyl` adheres to [Semantic Versioning](http://semver.org/).
 
 #### 1.x Releases
+- `1.3.x` Releases - [1.3.0](#130) | [1.3.1](#131)
 - `1.2.x` Releases - [1.2.7](#127) | [1.2.8](#128) | [1.2.10](#1210) | [1.2.11](#1211) 
 
 ---
@@ -21,6 +22,24 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## 1.3.1
+#### Fixed
+- Fixed import error related to importing metadata from importlib
+  - Fixed by [Mohamed Abdul Huq Ismail](https://github.com/aisma7_nike) in Pull Request [#14](https://github.com/Nike-Inc/pterradactyl/pull/14)
+
+#### Removed
+- Remove unused python-interface and MarkUpSafe dependencies
+  - Removed by [Mohamed Abdul Huq Ismail](https://github.com/aisma7_nike) in Pull Request [#14](https://github.com/Nike-Inc/pterradactyl/pull/14)
+
+## 1.3.0
+#### Updated
+- Updated poetry version to 1.4.1
+  - Updated by [Marcin Zalewski](https://github.com/marcinjzalewski) in Pull Request [#13](https://github.com/Nike-Inc/pterradactyl/pull/13)
+
+#### Removed
+- Removed support for python versions < 3.10.10
+  - Removed by [Marcin Zalewski](https://github.com/marcinjzalewski) in Pull Request [#13](https://github.com/Nike-Inc/pterradactyl/pull/13)
+
 ## 1.2.11
 
 #### Fixed
