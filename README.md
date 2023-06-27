@@ -9,7 +9,7 @@ Pterradactyl
 ![Python Wheel](https://img.shields.io/pypi/wheel/pterradactyl)
 
 
-Pterradactyl is a library developed to abstract TF configuration from the TF environment setup. Pterradactyl allows to create a hierarchy of TF environments/stacks, hallows an unconstrained number of cloud accounts and stacks to share inherited configuration.
+Pterradactyl is a library developed to abstract TF configuration from the TF environment setup. Pterradactyl allows to create a hierarchy of TF environments/stacks, allows an unconstrained number of cloud accounts and stacks to share inherited configuration.
 
 Currently, multiple TF stacks are managed through different TF environments and var files. But this becomes especially tricky to manage when the stacks are vastly different from one another, or even in the case of slightly different stacks, one could question the DRY principal looking at all the repeat vars in the var file! When stacks deviate from one another, by using just the var files, the TF code quickly becomes unreadable with all the conditionals. Using just environments based TF, there is always room of accidental apply of one stack to the other. You can use bash files to safegaurd against that but then there is always the old faithful way of doing by just completely skipping the bash file ! (#fun-stuff)
 
