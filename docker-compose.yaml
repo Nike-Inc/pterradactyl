@@ -1,0 +1,14 @@
+version: "2"
+services:
+  pterradactyl:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
+        - darwin/amd64
+    environment:
+      USER: ${USER}
+    volumes:
+      - .:/opt/nike-lab222/pterradactyl
