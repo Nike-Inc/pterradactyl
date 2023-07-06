@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          platforms: linux/amd64,linux/arm64,darwin
+          platforms: linux/amd64,linux/arm64
           tags: nikelab222/pterradactyl:latest,nikelab222/pterradactyl:${{ env.VERSION }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
