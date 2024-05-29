@@ -22,6 +22,12 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## 1.4.0
+#### Fixed
+- Fixed terraform binary install for arm64 architecture
+  - Fixed by [Mohamed Abdul Huq Ismail](https://github.com/aisma7_nike) in Pull Request [#15](https://github.com/Nike-Inc/pterradactyl/pull/15)
+
+---
 ## 1.3.1
 #### Fixed
 - Fixed import error related to importing metadata from importlib
