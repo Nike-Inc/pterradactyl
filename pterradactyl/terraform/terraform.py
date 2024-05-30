@@ -229,9 +229,9 @@ class Terraform(object):
         """
       returns a terraform build architecture type
     """
-        if platform.machine().startswith('arm'):
-            return 'arm'
-        return 'amd64' if platform.architecture()[0] == '64bit' else '386'
+        if platform.machine().startswith("arm"):
+            return "arm64" if platform.architecture()[0] == "64bit" else "arm"
+        return "amd64" if platform.architecture()[0] == "64bit" else "386"
 
     @property
     @memoize
