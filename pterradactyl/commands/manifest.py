@@ -1,3 +1,5 @@
+import os
+
 from pterradactyl.config import Config
 from pterradactyl.facter import Facter
 from pterradactyl.terraform.config import TerraformConfig
@@ -33,7 +35,7 @@ class ManifestCommand(AbstractBaseCommand):
         if not Validator(terraform_config, facts).validate():
             exit(1)
 
-        terraform_config.write(workspace)
+        env_vars = terraform_config.write(workspace)
 
         command = [args.command]
 
@@ -43,7 +45,8 @@ class ManifestCommand(AbstractBaseCommand):
         if terraform_args:
             command.extend(terraform_args)
 
-        terraform = Terraform(cwd=workspace)
+        # Create terraform instance with environment variables
+        terraform = Terraform(cwd=workspace, env_vars=env_vars)
 
         if terraform.validate():
             terraform.execute(*command)

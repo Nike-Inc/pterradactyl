@@ -6,6 +6,7 @@ import phiera
 
 from pterradactyl.config import Config
 from pterradactyl.util import lookup
+from pterradactyl.terraform.variable_extractor import VariableExtractor
 
 # XXX - this class is too "clever" for its own good. it's hard to follow.
 
@@ -51,10 +52,27 @@ class TerraformConfig(object):
         return [next(iter(self.alias_syntax.findall(module)), module) for module in modules]
 
     def write(self, path):
+        # Extract all values as variables
+        extractor = VariableExtractor()
+        original_config = self.to_dict()
+        
+        # Convert all values to variables
+        modified_config, variables_config, env_vars = extractor.extract_variables(original_config)
+        
+        # Write the configuration with variable references
         with open(os.path.join(path, 'main.tf.json'), 'w') as config:
-            json.dump(self.to_dict(), config, indent=2)
+            json.dump(modified_config, config, indent=2)
+            
+        # Write the variable definitions
+        with open(os.path.join(path, 'variables.tf.json'), 'w') as variables:
+            json.dump(variables_config, variables, indent=2)
+            
+        # Write facts as usual
         with open(os.path.join(path, 'facts.json'), 'w') as facts:
             json.dump(self.facts, facts, indent=2)
+            
+        # Return env_vars so the caller can use them
+        return env_vars
 
     def to_dict(self):
         return {prop: self._config_property(prop) for prop in self.properties if self.hiera.has(prop)}
