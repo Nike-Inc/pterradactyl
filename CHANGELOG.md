@@ -22,6 +22,24 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## 1.6.0
+
+#### Added
+- Added automatic extraction of all configuration values as Terraform variables to prevent secrets from being written to disk
+  - All values in `main.tf.json` are now replaced with variable references (e.g., `${var.v_s_12345678}`)
+  - Variables are passed securely via `TF_VAR_*` environment variables instead of being written to files
+  - Added `VariableExtractor` class that uses hash-based variable naming for deduplication
+
+#### Updated
+- Updated `TerraformConfig.write()` to return environment variables for secure value passing
+- Updated `Terraform` class to accept and pass environment variables to subprocess
+- Updated `ManifestCommand` to use the new secure variable passing mechanism
+
+#### Fixed
+- Fixed security issue where decrypted secrets from SOPS were written to `main.tf.json` in plaintext
+  - Now only variable references are written to disk, actual values stay in memory
+
+---
 ## 1.4.0
 #### Fixed
 - Fixed terraform binary install for arm64 architecture
