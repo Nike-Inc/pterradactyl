@@ -6,14 +6,42 @@ from typing import Any, Dict, Tuple
 class VariableExtractor:
     """Extracts leaf values and converts them to variables"""
     
-    # Paths where strings must remain literal (checked from end of path)
-    LITERAL_PATHS = {
-        ('module', '*', 'source'),
-        ('provider', '*', 'alias'),
-        ('*', 'depends_on'),
-        ('*', 'count'),
-        ('*', 'for_each'),
-        ('*', 'providers'),
+    # Context-specific literal paths: (parent_context, key) -> must be literal
+    LITERAL_CONTEXTS = {
+        # Module meta-arguments
+        ('module', 'source'): True,
+        ('module', 'version'): True,
+        ('module', 'count'): True,
+        ('module', 'for_each'): True,
+        ('module', 'providers'): True,
+        ('module', 'depends_on'): True,
+        
+        # Provider meta-arguments
+        ('provider', 'alias'): True,
+        ('provider', 'version'): True,
+        
+        # Resource meta-arguments
+        ('resource', 'count'): True,
+        ('resource', 'for_each'): True,
+        ('resource', 'depends_on'): True,
+        ('resource', 'provider'): True,
+        ('resource', 'lifecycle'): True,
+        
+        # Data source meta-arguments
+        ('data', 'count'): True,
+        ('data', 'for_each'): True,
+        ('data', 'depends_on'): True,
+        ('data', 'provider'): True,
+        
+        # Terraform configuration
+        ('terraform', 'required_version'): True,
+        ('terraform', 'required_providers'): True,
+    }
+    
+    # Parent paths where ALL child values must be literal
+    LITERAL_PARENT_PATHS = {
+        ('terraform', 'backend'),  # All backend configuration
+        ('terraform', 'required_providers'),  # Provider requirements
     }
     
     def __init__(self):
@@ -61,15 +89,34 @@ class VariableExtractor:
         return isinstance(value, str) and '${' in value
     
     def _is_literal_path(self, path: list) -> bool:
-        """Check if path matches any literal pattern"""
+        """Check if this path should remain literal"""
         clean_path = [p for p in path if not p.startswith('[')]  # Remove array indices
         
-        for pattern in self.LITERAL_PATHS:
-            # Match pattern from end of path
-            if len(clean_path) >= len(pattern):
-                if all(p == '*' or p == clean_path[-(i+1)] 
-                       for i, p in enumerate(reversed(pattern))):
+        if not clean_path:
+            return False
+            
+        # Check if we're inside a literal parent path
+        for parent_path in self.LITERAL_PARENT_PATHS:
+            if len(clean_path) >= len(parent_path):
+                if clean_path[:len(parent_path)] == list(parent_path):
                     return True
+        
+        # Check context-specific literals
+        if len(clean_path) >= 2:
+            # Get the context (module, resource, provider, etc.)
+            context = clean_path[0]
+            key = clean_path[-1]
+            
+            # For resources and data sources, check one level deeper
+            if context in ['resource', 'data'] and len(clean_path) >= 3:
+                # Skip the resource type, check the actual key
+                if (context, key) in self.LITERAL_CONTEXTS:
+                    return True
+            else:
+                # For module, provider, terraform blocks
+                if (context, key) in self.LITERAL_CONTEXTS:
+                    return True
+                    
         return False
     
     def _to_variable(self, value: Any) -> str:
