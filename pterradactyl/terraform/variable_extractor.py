@@ -58,7 +58,7 @@ class VariableExtractor:
     
     def _is_expression(self, value: Any) -> bool:
         """Check if value is already a Terraform expression"""
-        return isinstance(value, str) and value.startswith('${') and value.endswith('}')
+        return isinstance(value, str) and '${' in value
     
     def _is_literal_path(self, path: list) -> bool:
         """Check if path matches any literal pattern"""

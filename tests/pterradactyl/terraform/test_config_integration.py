@@ -3,7 +3,7 @@ import os
 import json
 import tempfile
 import shutil
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, PropertyMock
 from pterradactyl.terraform.config import TerraformConfig
 from pterradactyl.terraform.terraform import Terraform
 
@@ -33,16 +33,21 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         mock_config.return_value.dir = self.test_dir
         
         mock_hiera_instance = Mock()
-        mock_hiera_instance.get.return_value = {
-            "resource": {
-                "aws_s3_bucket": {
-                    "test": {
-                        "bucket": "my-test-bucket",
-                        "region": "us-west-2"
+        def mock_get(key, default=None, **kwargs):
+            if key == 'manifest':
+                return {'modules': []}
+            elif key == 'resource':
+                return {
+                    "aws_s3_bucket": {
+                        "test": {
+                            "bucket": "my-test-bucket",
+                            "region": "us-west-2"
+                        }
                     }
                 }
-            }
-        }
+            return default
+        
+        mock_hiera_instance.get.side_effect = mock_get
         mock_hiera_instance.has.return_value = True
         mock_hiera.return_value = mock_hiera_instance
         
@@ -88,16 +93,21 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         mock_config.return_value.dir = self.test_dir
         
         mock_hiera_instance = Mock()
-        mock_hiera_instance.get.return_value = {
-            "resource": {
-                "aws_db_instance": {
-                    "main": {
-                        "password": secret_value,
-                        "username": "admin"
+        def mock_get(key, default=None, **kwargs):
+            if key == 'manifest':
+                return {'modules': []}
+            elif key == 'resource':
+                return {
+                    "aws_db_instance": {
+                        "main": {
+                            "password": secret_value,
+                            "username": "admin"
+                        }
                     }
                 }
-            }
-        }
+            return default
+        
+        mock_hiera_instance.get.side_effect = mock_get
         mock_hiera_instance.has.return_value = True
         mock_hiera.return_value = mock_hiera_instance
         
@@ -152,8 +162,10 @@ class TestTerraformIntegration(unittest.TestCase):
         }
         
         terraform = Terraform(cwd=self.test_dir, env_vars=env_vars)
-        terraform.terraform = "/mock/terraform"  # Mock the binary path
-        terraform.execute("plan")
+        # Mock the terraform property to return a path
+        with patch.object(type(terraform), 'terraform', new_callable=PropertyMock) as mock_terraform:
+            mock_terraform.return_value = "/mock/terraform"
+            terraform.execute("plan")
         
         # Check that Popen was called with correct env
         mock_popen.assert_called_once()
@@ -183,8 +195,9 @@ class TestTerraformIntegration(unittest.TestCase):
         # Create terraform instance with env vars
         env_vars = {"v_s_test": "value"}
         terraform = Terraform(cwd=self.test_dir, env_vars=env_vars)
-        terraform.terraform = "/mock/terraform"
-        terraform._Terraform__do_validate()
+        with patch.object(type(terraform), 'terraform', new_callable=PropertyMock) as mock_terraform:
+            mock_terraform.return_value = "/mock/terraform"
+            terraform._Terraform__do_validate()
         
         # Check that run was called with env
         mock_run.assert_called_once()
