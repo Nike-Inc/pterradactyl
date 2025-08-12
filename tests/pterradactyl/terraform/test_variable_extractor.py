@@ -1,5 +1,4 @@
 import unittest
-import json
 from pterradactyl.terraform.variable_extractor import VariableExtractor
 
 
