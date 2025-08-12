@@ -64,9 +64,14 @@ class TerraformConfig(object):
             json.dump(modified_config, config, indent=2)
             
         # Write the variable definitions only if there are any
+        variables_file = os.path.join(path, 'variables.tf.json')
         if variables_config:
-            with open(os.path.join(path, 'variables.tf.json'), 'w') as variables:
+            with open(variables_file, 'w') as variables:
                 json.dump(variables_config, variables, indent=2)
+        else:
+            # Clean up any existing variables file from previous runs
+            if os.path.exists(variables_file):
+                os.remove(variables_file)
             
         # Write facts as usual
         with open(os.path.join(path, 'facts.json'), 'w') as facts:
