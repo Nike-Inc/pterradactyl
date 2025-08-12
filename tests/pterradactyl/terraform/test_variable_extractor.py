@@ -234,7 +234,8 @@ class TestVariableExtractor(unittest.TestCase):
             "module": {
                 "vpc": {
                     "source": "./modules/vpc",
-                    "cidr": "10.0.0.0/16"
+                    "cidr": "10.0.0.0/16",
+                    "db_password": "secret123"
                 }
             }
         }
@@ -244,8 +245,11 @@ class TestVariableExtractor(unittest.TestCase):
         # Source should remain literal
         self.assertEqual(modified["module"]["vpc"]["source"], "./modules/vpc")
         
-        # But cidr should be variablized
-        self.assertTrue(modified["module"]["vpc"]["cidr"].startswith("${var.v_s_"))
+        # Non-sensitive cidr should remain literal
+        self.assertEqual(modified["module"]["vpc"]["cidr"], "10.0.0.0/16")
+        
+        # But password should be variablized
+        self.assertTrue(modified["module"]["vpc"]["db_password"].startswith("${var.v_s_"))
     
     def test_expression_preservation(self):
         """Test that existing expressions are preserved"""
@@ -277,48 +281,55 @@ class TestVariableExtractor(unittest.TestCase):
     def test_list_handling(self):
         """Test that lists are handled correctly"""
         config = {
-            "resource": {
-                "aws_security_group": {
-                    "example": {
-                        "ingress": [
-                            {"from_port": 80, "to_port": 80},
-                            {"from_port": 443, "to_port": 443}
-                        ]
-                    }
+            "module": {
+                "security": {
+                    "source": "./modules/security",
+                    "auth_tokens": [
+                        "token-abc-123",
+                        "token-xyz-456"
+                    ],
+                    "allowed_ports": [80, 443]
                 }
             }
         }
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
-        ingress = modified["resource"]["aws_security_group"]["example"]["ingress"]
+        # Check that sensitive list items were variablized
+        auth_tokens = modified["module"]["security"]["auth_tokens"]
+        self.assertTrue(auth_tokens[0].startswith("${var.v_s_"))
+        self.assertTrue(auth_tokens[1].startswith("${var.v_s_"))
         
-        # Check that list items were processed
-        self.assertTrue(ingress[0]["from_port"].startswith("${var.v_n_"))
-        self.assertTrue(ingress[1]["from_port"].startswith("${var.v_n_"))
+        # Tokens should be different variables
+        self.assertNotEqual(auth_tokens[0], auth_tokens[1])
         
-        # 80 and 443 should be different variables
-        self.assertNotEqual(ingress[0]["from_port"], ingress[1]["from_port"])
+        # Non-sensitive values remain literal
+        self.assertEqual(modified["module"]["security"]["allowed_ports"], [80, 443])
     
     def test_env_var_generation(self):
         """Test environment variable generation"""
         config = {
-            "locals": {
-                "app_name": "myapp",
-                "port": 8080,
-                "enabled": False
+            "module": {
+                "app": {
+                    "source": "./modules/app",
+                    "api_key": "key-12345",
+                    "enable_auth": True,
+                    "max_connections": 100
+                }
             }
         }
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
+        # Check that only sensitive values generated env vars
+        self.assertGreater(len(env_vars), 0)
+        
         # Check env vars are strings
         for var_name, value in env_vars.items():
             self.assertIsInstance(value, str)
         
-        # Check boolean conversion
-        bool_vars = [v for k, v in env_vars.items() if k.startswith("v_b_")]
-        self.assertIn("false", bool_vars)
+        # Check that api_key was variablized
+        self.assertTrue(modified["module"]["app"]["api_key"].startswith("${var.v_s_"))
     
     def test_hash_collision_handling(self):
         """Test that hash collisions are handled correctly"""
@@ -345,74 +356,74 @@ class TestVariableExtractor(unittest.TestCase):
     def test_type_differentiation(self):
         """Test that same value with different types gets different variables"""
         config = {
-            "locals": {
-                "str_one": "1",
-                "num_one": 1,
-                "str_true": "true", 
-                "bool_true": True
+            "module": {
+                "config": {
+                    "source": "./modules/config",
+                    "secret_string": "1",
+                    "secret_number": 1,
+                    "auth_enabled_str": "true",
+                    "auth_enabled_bool": True
+                }
             }
         }
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
-        # Get the variable references
-        vars_used = {
-            key: modified["locals"][key] 
-            for key in ["str_one", "num_one", "str_true", "bool_true"]
-        }
+        # Get the variable references for sensitive values
+        module_cfg = modified["module"]["config"]
         
-        # Different types should use different variables
-        self.assertNotEqual(vars_used["str_one"], vars_used["num_one"])
-        self.assertNotEqual(vars_used["str_true"], vars_used["bool_true"])
+        # Same value with different types should use different variables
+        self.assertTrue(module_cfg["secret_string"].startswith("${var.v_s_"))
+        self.assertTrue(module_cfg["secret_number"].startswith("${var.v_n_"))
+        self.assertNotEqual(module_cfg["secret_string"], module_cfg["secret_number"])
+        
+        self.assertTrue(module_cfg["auth_enabled_str"].startswith("${var.v_s_"))
+        self.assertTrue(module_cfg["auth_enabled_bool"].startswith("${var.v_b_"))
+        self.assertNotEqual(module_cfg["auth_enabled_str"], module_cfg["auth_enabled_bool"])
         
         # Should have 4 different variables
-        self.assertEqual(len(set(vars_used.values())), 4)
+        self.assertEqual(len(variables["variable"]), 4)
     
     def test_complex_nested_structure(self):
         """Test extraction from deeply nested structures"""
         config = {
+            "module": {
+                "infrastructure": {
+                    "source": "./modules/infra",
+                    "database": {
+                        "master_password": "super-secret-123",
+                        "backup_key": "backup-key-456",
+                        "port": 5432
+                    },
+                    "cache": {
+                        "auth_token": "redis-auth-token",
+                        "host": "cache.example.com"
+                    }
+                }
+            },
             "resource": {
                 "aws_instance": {
                     "web": {
                         "ami": "ami-123456",
-                        "tags": {
-                            "Environment": "production",
-                            "Team": "platform",
-                            "Cost": {
-                                "Center": "engineering",
-                                "Project": "infrastructure"
-                            }
-                        },
-                        "root_block_device": {
-                            "volume_type": "gp3",
-                            "volume_size": 30,
-                            "encrypted": True
-                        }
+                        "instance_type": "t2.micro"
                     }
-                }
-            },
-            "locals": {
-                "common_tags": {
-                    "ManagedBy": "terraform",
-                    "Repository": "infrastructure"
                 }
             }
         }
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
-        # Check nested values were extracted
-        tags = modified["resource"]["aws_instance"]["web"]["tags"]
-        self.assertTrue(tags["Environment"].startswith("${var.v_s_"))
-        self.assertTrue(tags["Cost"]["Center"].startswith("${var.v_s_"))
+        # Check that sensitive nested module values were variablized
+        db_config = modified["module"]["infrastructure"]["database"]
+        self.assertTrue(db_config["master_password"].startswith("${var.v_s_"))
+        self.assertTrue(db_config["backup_key"].startswith("${var.v_s_"))
+        self.assertEqual(db_config["port"], 5432)  # Non-sensitive remains literal
         
-        # Check deduplication across different parts of config
-        repo_var1 = tags["Cost"]["Project"]
-        repo_var2 = modified["locals"]["common_tags"]["Repository"]
-        self.assertEqual(repo_var1, repo_var2)  # Both "infrastructure"
+        cache_config = modified["module"]["infrastructure"]["cache"]
+        self.assertTrue(cache_config["auth_token"].startswith("${var.v_s_"))
+        self.assertEqual(cache_config["host"], "cache.example.com")  # Non-sensitive
         
-        # Verify all leaf values were converted
-        device = modified["resource"]["aws_instance"]["web"]["root_block_device"]
-        self.assertTrue(device["volume_type"].startswith("${var.v_s_"))
-        self.assertTrue(device["volume_size"].startswith("${var.v_n_"))
-        self.assertTrue(device["encrypted"].startswith("${var.v_b_"))
+        # Resource values should remain literal
+        instance = modified["resource"]["aws_instance"]["web"]
+        self.assertEqual(instance["ami"], "ami-123456")
+        self.assertEqual(instance["instance_type"], "t2.micro")

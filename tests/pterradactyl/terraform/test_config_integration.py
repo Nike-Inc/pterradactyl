@@ -27,7 +27,7 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         """Test that write() creates the expected files"""
         # Setup mocks
         mock_config.return_value.get.return_value = {
-            'module_path': [],
+            'module_path': ['./modules'],
             'terraform': {}
         }
         mock_config.return_value.dir = self.test_dir
@@ -35,7 +35,15 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         mock_hiera_instance = Mock()
         def mock_get(key, default=None, **kwargs):
             if key == 'manifest':
-                return {'modules': []}
+                return {'modules': ['database']}
+            elif key == 'module':
+                return {
+                    "database": {
+                        "source": "./modules/database",
+                        "db_password": "secret-password-123",
+                        "db_name": "myapp"
+                    }
+                }
             elif key == 'resource':
                 return {
                     "aws_s3_bucket": {
@@ -48,7 +56,9 @@ class TestTerraformConfigIntegration(unittest.TestCase):
             return default
         
         mock_hiera_instance.get.side_effect = mock_get
-        mock_hiera_instance.has.return_value = True
+        def mock_has(key):
+            return key in ['manifest', 'module', 'resource']
+        mock_hiera_instance.has.side_effect = mock_has
         mock_hiera.return_value = mock_hiera_instance
         
         # Create config and write
@@ -60,34 +70,42 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'variables.tf.json')))
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'facts.json')))
         
-        # Check main.tf.json contains variable references
+        # Check main.tf.json
         with open(os.path.join(self.test_dir, 'main.tf.json')) as f:
             main_config = json.load(f)
         
+        # Module sensitive values should be variablized
+        self.assertTrue(main_config["module"]["database"]["db_password"].startswith("${var.v_s_"))
+        # Module non-sensitive values remain literal
+        self.assertEqual(main_config["module"]["database"]["db_name"], "myapp")
+        self.assertEqual(main_config["module"]["database"]["source"], "./modules/database")
+        
+        # Resource values remain literal
         bucket_config = main_config["resource"]["aws_s3_bucket"]["test"]
-        self.assertTrue(bucket_config["bucket"].startswith("${var.v_s_"))
-        self.assertTrue(bucket_config["region"].startswith("${var.v_s_"))
+        self.assertEqual(bucket_config["bucket"], "my-test-bucket")
+        self.assertEqual(bucket_config["region"], "us-west-2")
         
         # Check variables.tf.json has definitions
         with open(os.path.join(self.test_dir, 'variables.tf.json')) as f:
             var_config = json.load(f)
         
         self.assertIn("variable", var_config)
-        self.assertGreater(len(var_config["variable"]), 0)
+        self.assertEqual(len(var_config["variable"]), 1)  # Only password should be variablized
         
         # Check env_vars were returned
         self.assertIsInstance(env_vars, dict)
-        self.assertGreater(len(env_vars), 0)
+        self.assertEqual(len(env_vars), 1)
     
     @patch('pterradactyl.terraform.config.Config')
     @patch('pterradactyl.terraform.config.phiera.Hiera')
     def test_no_secrets_in_files(self, mock_hiera, mock_config):
-        """Test that no actual values are written to tf files"""
+        """Test that no sensitive module values are written to tf files"""
         secret_value = "super-secret-password-12345"
+        api_key_value = "api-key-xyz-789"
         
         # Setup mocks
         mock_config.return_value.get.return_value = {
-            'module_path': [],
+            'module_path': ['./modules'],
             'terraform': {}
         }
         mock_config.return_value.dir = self.test_dir
@@ -95,12 +113,21 @@ class TestTerraformConfigIntegration(unittest.TestCase):
         mock_hiera_instance = Mock()
         def mock_get(key, default=None, **kwargs):
             if key == 'manifest':
-                return {'modules': []}
+                return {'modules': ['database']}
+            elif key == 'module':
+                return {
+                    "database": {
+                        "source": "./modules/database",
+                        "master_password": secret_value,
+                        "api_key": api_key_value,
+                        "port": 5432
+                    }
+                }
             elif key == 'resource':
                 return {
                     "aws_db_instance": {
                         "main": {
-                            "password": secret_value,
+                            "password": "resource-password",
                             "username": "admin"
                         }
                     }
@@ -108,25 +135,33 @@ class TestTerraformConfigIntegration(unittest.TestCase):
             return default
         
         mock_hiera_instance.get.side_effect = mock_get
-        mock_hiera_instance.has.return_value = True
+        def mock_has(key):
+            return key in ['manifest', 'module', 'resource']
+        mock_hiera_instance.has.side_effect = mock_has
         mock_hiera.return_value = mock_hiera_instance
         
         # Create config and write
         config = TerraformConfig(self.facts, cwd=self.test_dir)
         env_vars = config.write(self.test_dir)
         
-        # Check that secret is NOT in main.tf.json
+        # Check that module secrets are NOT in main.tf.json
         with open(os.path.join(self.test_dir, 'main.tf.json')) as f:
             content = f.read()
             self.assertNotIn(secret_value, content)
+            self.assertNotIn(api_key_value, content)
+            # But resource values (not variablized) should be there
+            self.assertIn("resource-password", content)
         
-        # Check that secret is NOT in variables.tf.json
+        # Check that secrets are NOT in variables.tf.json
         with open(os.path.join(self.test_dir, 'variables.tf.json')) as f:
             content = f.read()
             self.assertNotIn(secret_value, content)
+            self.assertNotIn(api_key_value, content)
         
-        # But the secret SHOULD be in env_vars
-        self.assertIn(secret_value, env_vars.values())
+        # But the secrets SHOULD be in env_vars
+        env_values = list(env_vars.values())
+        self.assertIn(secret_value, env_values)
+        self.assertIn(api_key_value, env_values)
 
 
 class TestTerraformIntegration(unittest.TestCase):
