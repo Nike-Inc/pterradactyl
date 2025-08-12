@@ -6,6 +6,8 @@ from typing import Any, Dict, Tuple
 class VariableExtractor:
     """Extracts leaf values and converts them to variables"""
     
+    HASH_LENGTH = 8  # Length of hash suffix for variable names
+    
     # Patterns that indicate a value might be sensitive (checked case-insensitive)
     SENSITIVE_PATTERNS = [
         'secret',
@@ -110,11 +112,7 @@ class VariableExtractor:
         path_str = '.'.join(path).lower()
         
         # Check if any sensitive pattern appears in the path
-        for pattern in self.SENSITIVE_PATTERNS:
-            if pattern in path_str:
-                return True
-        
-        return False
+        return any(pattern in path_str for pattern in self.SENSITIVE_PATTERNS)
     
     def _is_expression(self, value: Any) -> bool:
         """Check if value is already a Terraform expression"""
@@ -131,9 +129,8 @@ class VariableExtractor:
             
         # Check if we're inside a literal parent path
         for parent_path in self.LITERAL_PARENT_PATHS:
-            if len(clean_path) >= len(parent_path):
-                if clean_path[:len(parent_path)] == list(parent_path):
-                    return True
+            if clean_path[:len(parent_path)] == list(parent_path):
+                return True
         
         # Check context-specific literals
         if len(clean_path) >= 2:
@@ -170,7 +167,7 @@ class VariableExtractor:
             return f"${{var.{self.value_to_var[key]}}}"
         
         # Generate new variable name
-        hash_val = hashlib.sha256(f"{var_type}:{value}".encode()).hexdigest()[:8]
+        hash_val = hashlib.sha256(f"{var_type}:{value}".encode()).hexdigest()[:self.HASH_LENGTH]
         base_name = f"v_{var_type[0]}_{hash_val}"
         
         # Handle hash collisions

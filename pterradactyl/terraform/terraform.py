@@ -40,15 +40,10 @@ class Terraform(object):
         self.env_vars = env_vars or {}
 
     def execute(self, *args):
-        # Create environment with TF_VAR_ variables
-        env = os.environ.copy()
-        for var_name, value in self.env_vars.items():
-            env[f'TF_VAR_{var_name}'] = str(value)
-        
         process = subprocess.Popen([self.terraform] + list(args), 
                                  close_fds=True, 
                                  cwd=self.cwd, 
-                                 env=env,
+                                 env=self._build_env(),
                                  stdout=subprocess.PIPE, 
                                  stderr=subprocess.STDOUT, 
                                  encoding='utf-8')
@@ -128,17 +123,18 @@ class Terraform(object):
                     return False
         return True
 
-    def __do_validate(self):
-        # Create environment with TF_VAR_ variables
+    def _build_env(self):
+        """Build environment with TF_VAR_ variables"""
         env = os.environ.copy()
-        for var_name, value in self.env_vars.items():
-            env[f'TF_VAR_{var_name}'] = str(value)
-            
+        env.update({f'TF_VAR_{k}': str(v) for k, v in self.env_vars.items()})
+        return env
+    
+    def __do_validate(self):
         process = subprocess.run([self.terraform, 'validate', '-json'],
                                  capture_output=True, 
                                  close_fds=True, 
                                  cwd=self.cwd,
-                                 env=env)
+                                 env=self._build_env())
         return json.loads(process.stdout)
 
     def __log_validation_error(self, error):
