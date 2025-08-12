@@ -6,6 +6,17 @@ from typing import Any, Dict, Tuple
 class VariableExtractor:
     """Extracts leaf values and converts them to variables"""
     
+    # Patterns that indicate a value might be sensitive (checked case-insensitive)
+    SENSITIVE_PATTERNS = [
+        'secret',
+        'pass',    # Matches password, passwd, passphrase, etc.
+        'key',     # Matches key, apikey, access_key, private_key, etc.
+        'token',
+        'cred',    # Matches credential, credentials, etc.
+        'auth',    # Matches auth, authorization, authentication, etc.
+        'cert',    # Matches cert, certificate, etc.
+    ]
+    
     # Context-specific literal paths: (parent_context, key) -> must be literal
     LITERAL_CONTEXTS = {
         # Module meta-arguments
@@ -77,12 +88,33 @@ class VariableExtractor:
         if value is None or self._is_expression(value):
             return value
             
-        # Check if string should remain literal
-        if isinstance(value, str) and self._is_literal_path(path):
-            return value
+        # Only variablize module configuration values with sensitive names
+        clean_path = [p for p in path if not p.startswith('[')]
+        if len(clean_path) >= 3 and clean_path[0] == 'module':
+            # This is a module configuration value (e.g., module.vpc.database_password)
+            # But skip if it's a literal path (like module.vpc.source)
+            if self._is_literal_path(path):
+                return value
             
-        # Convert to variable
-        return self._to_variable(value)
+            # Check if any part of the path contains sensitive patterns
+            if self._contains_sensitive_pattern(clean_path):
+                # Convert to variable
+                return self._to_variable(value)
+            
+        # Everything else remains literal
+        return value
+    
+    def _contains_sensitive_pattern(self, path: list) -> bool:
+        """Check if any part of the path contains sensitive patterns"""
+        # Join path elements and convert to lowercase for checking
+        path_str = '.'.join(path).lower()
+        
+        # Check if any sensitive pattern appears in the path
+        for pattern in self.SENSITIVE_PATTERNS:
+            if pattern in path_str:
+                return True
+        
+        return False
     
     def _is_expression(self, value: Any) -> bool:
         """Check if value is already a Terraform expression"""

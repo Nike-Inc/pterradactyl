@@ -8,8 +8,8 @@ class TestVariableExtractor(unittest.TestCase):
     def setUp(self):
         self.extractor = VariableExtractor()
     
-    def test_simple_values(self):
-        """Test basic value extraction"""
+    def test_simple_values_remain_literal(self):
+        """Test that non-module values remain literal"""
         config = {
             "resource": {
                 "aws_instance": {
@@ -25,37 +25,29 @@ class TestVariableExtractor(unittest.TestCase):
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
-        # Check that values were replaced with variable references
+        # Check that resource values remain literal (not variablized)
         instance_config = modified["resource"]["aws_instance"]["example"]
-        self.assertTrue(instance_config["ami"].startswith("${var.v_s_"))
-        self.assertTrue(instance_config["instance_type"].startswith("${var.v_s_"))
-        self.assertTrue(instance_config["count"].startswith("${var.v_n_"))
-        self.assertTrue(instance_config["enable_monitoring"].startswith("${var.v_b_"))
+        self.assertEqual(instance_config["ami"], "ami-123456")
+        self.assertEqual(instance_config["instance_type"], "t2.micro")
+        self.assertEqual(instance_config["count"], 3)
+        self.assertEqual(instance_config["enable_monitoring"], True)
         
-        # Check variable definitions
-        self.assertIn("variable", variables)
-        var_defs = variables["variable"]
-        
-        # Check that we have the right number of variables
-        self.assertEqual(len(var_defs), 4)
-        
-        # Check types are correct
-        for var_name, var_def in var_defs.items():
-            if var_name.startswith("v_s_"):
-                self.assertEqual(var_def["type"], "string")
-            elif var_name.startswith("v_n_"):
-                self.assertEqual(var_def["type"], "number")
-            elif var_name.startswith("v_b_"):
-                self.assertEqual(var_def["type"], "bool")
+        # Should have no variables created
+        self.assertEqual(len(variables.get("variable", {})), 0)
     
     def test_deduplication(self):
-        """Test that identical values share the same variable"""
+        """Test that identical sensitive values share the same variable"""
         config = {
-            "resource": {
-                "aws_instance": {
-                    "web": {"ami": "ami-123456", "instance_type": "t2.micro"},
-                    "app": {"ami": "ami-123456", "instance_type": "t2.micro"},
-                    "db": {"ami": "ami-789012", "instance_type": "t2.micro"}
+            "module": {
+                "app1": {
+                    "source": "./modules/app",
+                    "database_password": "samepass123",
+                    "api_token": "token-xyz"
+                },
+                "app2": {
+                    "source": "./modules/app", 
+                    "database_password": "samepass123",
+                    "auth_key": "different-key"
                 }
             }
         }
@@ -63,42 +55,38 @@ class TestVariableExtractor(unittest.TestCase):
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
         # Get the variable references
-        web_ami = modified["resource"]["aws_instance"]["web"]["ami"]
-        app_ami = modified["resource"]["aws_instance"]["app"]["ami"]
-        db_ami = modified["resource"]["aws_instance"]["db"]["ami"]
+        app1_pass = modified["module"]["app1"]["database_password"]
+        app2_pass = modified["module"]["app2"]["database_password"]
         
-        web_type = modified["resource"]["aws_instance"]["web"]["instance_type"]
-        app_type = modified["resource"]["aws_instance"]["app"]["instance_type"]
+        # Same sensitive values should use same variable
+        self.assertEqual(app1_pass, app2_pass)
         
-        # Same values should use same variable
-        self.assertEqual(web_ami, app_ami)
-        self.assertEqual(web_type, app_type)
+        # Different sensitive values should use different variables
+        app1_token = modified["module"]["app1"]["api_token"]
+        app2_key = modified["module"]["app2"]["auth_key"]
+        self.assertNotEqual(app1_token, app2_key)
         
-        # Different values should use different variables
-        self.assertNotEqual(web_ami, db_ami)
-        
-        # Should have only 3 variables total (2 amis + 1 instance_type)
+        # Should have only 3 variables total (1 shared password + 2 different tokens)
         self.assertEqual(len(variables["variable"]), 3)
     
     def test_value_reconstruction(self):
         """Test that we can reconstruct original values from variables"""
         config = {
+            "module": {
+                "database": {
+                    "source": "./modules/database",
+                    "master_password": "supersecret123!",
+                    "read_password": "readonlypass456",
+                    "api_secret_key": "abc-xyz-123",
+                    "connection_string": "host=db.example.com",  # Has 'connection' but not sensitive pattern
+                    "port": 5432
+                }
+            },
             "resource": {
-                "aws_db_instance": {
-                    "main": {
-                        "allocated_storage": 100,
-                        "storage_type": "gp2",
-                        "engine": "mysql",
-                        "engine_version": "5.7",
-                        "instance_class": "db.t2.micro",
-                        "name": "mydb",
-                        "username": "admin",
-                        "password": "supersecret123!",
-                        "parameter_group_name": "default.mysql5.7",
-                        "skip_final_snapshot": True,
-                        "backup_retention_period": 7,
-                        "backup_window": "03:00-04:00",
-                        "maintenance_window": "sun:04:00-sun:05:00"
+                "aws_instance": {
+                    "web": {
+                        "ami": "ami-123456",  # Should remain literal
+                        "instance_type": "t2.micro"
                     }
                 }
             }
@@ -106,40 +94,139 @@ class TestVariableExtractor(unittest.TestCase):
         
         modified, variables, env_vars = self.extractor.extract_variables(config)
         
-        # Verify all values were converted to variables
-        db_config = modified["resource"]["aws_db_instance"]["main"]
-        for key, value in db_config.items():
-            if isinstance(value, str):
-                self.assertTrue(value.startswith("${var.v_"))
+        # Check that only sensitive module values were variablized
+        db_module = modified["module"]["database"]
+        self.assertTrue(db_module["master_password"].startswith("${var.v_s_"))
+        self.assertTrue(db_module["read_password"].startswith("${var.v_s_"))
+        self.assertTrue(db_module["api_secret_key"].startswith("${var.v_s_"))
         
-        # Verify we can map back to original values
+        # Non-sensitive module values remain literal
+        self.assertEqual(db_module["connection_string"], "host=db.example.com")
+        self.assertEqual(db_module["port"], 5432)
+        self.assertEqual(db_module["source"], "./modules/database")
+        
+        # Resource values remain literal
+        self.assertEqual(modified["resource"]["aws_instance"]["web"]["ami"], "ami-123456")
+        self.assertEqual(modified["resource"]["aws_instance"]["web"]["instance_type"], "t2.micro")
+        
+        # Verify we can map back to original sensitive values
         original_values = {}
         for var_name, var_info in self.extractor.variables.items():
-            # Find where this variable is used in modified config
             var_ref = f"${{var.{var_name}}}"
             original_values[var_ref] = var_info["value"]
         
-        # Check specific sensitive value
-        password_var = db_config["password"]
-        self.assertIn(password_var, original_values)
-        self.assertEqual(original_values[password_var], "supersecret123!")
+        # Check specific sensitive values
+        master_pass_var = db_module["master_password"]
+        self.assertIn(master_pass_var, original_values)
+        self.assertEqual(original_values[master_pass_var], "supersecret123!")
         
         # Check that env_vars contain the correct values
-        for var_name, expected_value in [
-            (db_config["password"], "supersecret123!"),
-            (db_config["username"], "admin"),
-            (db_config["allocated_storage"], 100),
-            (db_config["skip_final_snapshot"], True)
+        for var_ref, expected_value in [
+            (db_module["master_password"], "supersecret123!"),
+            (db_module["read_password"], "readonlypass456"),
+            (db_module["api_secret_key"], "abc-xyz-123")
         ]:
             # Extract variable name from reference
-            var_name_only = var_name.replace("${var.", "").replace("}", "")
+            var_name_only = var_ref.replace("${var.", "").replace("}", "")
             self.assertIn(var_name_only, env_vars)
-            
-            # Check value matches (accounting for type conversion)
-            if isinstance(expected_value, bool):
-                self.assertEqual(env_vars[var_name_only], str(expected_value).lower())
-            else:
-                self.assertEqual(env_vars[var_name_only], str(expected_value))
+            self.assertEqual(env_vars[var_name_only], str(expected_value))
+    
+    def test_sensitive_module_patterns(self):
+        """Test that module values with sensitive patterns are variablized"""
+        config = {
+            "module": {
+                "database": {
+                    "source": "./modules/rds",
+                    "db_password": "supersecret123",
+                    "api_key": "abc123xyz",
+                    "port": 5432,
+                    "name": "mydb"
+                },
+                "cerberus": {
+                    "source": "./modules/cerberus",
+                    "secrets": {
+                        "rds": {
+                            "dburi": "postgresql://user:pass@host/db"
+                        }
+                    }
+                },
+                "app": {
+                    "source": "./modules/app",
+                    "client_credentials": "oauth-token-here",
+                    "debug": True,
+                    "version": "1.2.3"
+                }
+            }
+        }
+        
+        modified, variables, env_vars = self.extractor.extract_variables(config)
+        
+        # Check that sensitive values are variablized
+        self.assertTrue(modified["module"]["database"]["db_password"].startswith("${var.v_s_"))
+        self.assertTrue(modified["module"]["database"]["api_key"].startswith("${var.v_s_"))
+        self.assertTrue(modified["module"]["app"]["client_credentials"].startswith("${var.v_s_"))
+        
+        # Check nested sensitive path
+        self.assertTrue(modified["module"]["cerberus"]["secrets"]["rds"]["dburi"].startswith("${var.v_s_"))
+        
+        # Check that non-sensitive values remain literal
+        self.assertEqual(modified["module"]["database"]["port"], 5432)
+        self.assertEqual(modified["module"]["database"]["name"], "mydb")
+        self.assertEqual(modified["module"]["app"]["debug"], True)
+        self.assertEqual(modified["module"]["app"]["version"], "1.2.3")
+        
+        # Sources should always remain literal
+        self.assertEqual(modified["module"]["database"]["source"], "./modules/rds")
+        self.assertEqual(modified["module"]["cerberus"]["source"], "./modules/cerberus")
+        self.assertEqual(modified["module"]["app"]["source"], "./modules/app")
+        
+        # Should have created 4 variables (for the sensitive values)
+        self.assertEqual(len(variables["variable"]), 4)
+    
+    def test_nested_sensitive_paths(self):
+        """Test that deeply nested sensitive paths are variablized"""
+        config = {
+            "module": {
+                "cerberus": {
+                    "source": "./modules/cerberus",
+                    "secrets": {
+                        "postgres": {
+                            "DB_URI": "postgresql://user:pass@localhost:5432/mydb",
+                            "DB_NAME": "mydb"
+                        },
+                        "redis": {
+                            "connection": "redis://localhost:6379"
+                        }
+                    },
+                    "config": {
+                        "port": 8080,
+                        "environment": "production"
+                    }
+                }
+            }
+        }
+        
+        modified, variables, env_vars = self.extractor.extract_variables(config)
+        
+        # Check that the nested sensitive path is variablized
+        postgres_secrets = modified["module"]["cerberus"]["secrets"]["postgres"]
+        self.assertTrue(postgres_secrets["DB_URI"].startswith("${var.v_s_"))
+        self.assertTrue(postgres_secrets["DB_NAME"].startswith("${var.v_s_"))
+        
+        # Redis path also contains 'secrets' so should be variablized
+        redis_secrets = modified["module"]["cerberus"]["secrets"]["redis"]
+        self.assertTrue(redis_secrets["connection"].startswith("${var.v_s_"))
+        
+        # Non-sensitive nested values should remain literal
+        config_section = modified["module"]["cerberus"]["config"]
+        self.assertEqual(config_section["port"], 8080)
+        self.assertEqual(config_section["environment"], "production")
+        
+        # Source remains literal
+        self.assertEqual(modified["module"]["cerberus"]["source"], "./modules/cerberus")
+        
+        # Should have created 3 variables
+        self.assertEqual(len(variables["variable"]), 3)
     
     def test_module_source_literal(self):
         """Test that module sources remain literal"""
