@@ -63,9 +63,10 @@ class TerraformConfig(object):
         with open(os.path.join(path, 'main.tf.json'), 'w') as config:
             json.dump(modified_config, config, indent=2)
             
-        # Write the variable definitions
-        with open(os.path.join(path, 'variables.tf.json'), 'w') as variables:
-            json.dump(variables_config, variables, indent=2)
+        # Write the variable definitions only if there are any
+        if variables_config:
+            with open(os.path.join(path, 'variables.tf.json'), 'w') as variables:
+                json.dump(variables_config, variables, indent=2)
             
         # Write facts as usual
         with open(os.path.join(path, 'facts.json'), 'w') as facts:

@@ -76,7 +76,10 @@ class VariableExtractor:
             for name, info in self.variables.items()
         }
         
-        return modified_config, {"variable": variable_defs}, env_vars
+        # Only include variable block if we have variables
+        variables_config = {"variable": variable_defs} if variable_defs else {}
+        
+        return modified_config, variables_config, env_vars
     
     def _process(self, value: Any, path: list) -> Any:
         """Process any value recursively"""
