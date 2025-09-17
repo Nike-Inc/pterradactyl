@@ -28,7 +28,7 @@ class Terraform(object):
     RELEASE_URL_PATTERN = 'https://releases.hashicorp.com/terraform/{version}/terraform_{version}_{os}_{arch}.zip'
     GITHUB_RELEASES_URL_PATTERN = 'https://api.{domain}/repos/{owner}/{repo}/releases'
 
-    def __init__(self, cwd=None):
+    def __init__(self, cwd=None, env_vars=None):
         app_config = Config()
         terraform_config = app_config.get('terraform')
 
@@ -37,9 +37,16 @@ class Terraform(object):
         self.plugins = terraform_config.get('plugins', [])
         self.version = terraform_config['version']
         self.auth_headers = terraform_config.get("git_credentials", {})
+        self.env_vars = env_vars or {}
 
     def execute(self, *args):
-        process = subprocess.Popen([self.terraform] + list(args), close_fds=True, cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8')
+        process = subprocess.Popen([self.terraform] + list(args), 
+                                 close_fds=True, 
+                                 cwd=self.cwd, 
+                                 env=self._build_env(),
+                                 stdout=subprocess.PIPE, 
+                                 stderr=subprocess.STDOUT, 
+                                 encoding='utf-8')
 
         output = []
         while True:
@@ -116,9 +123,18 @@ class Terraform(object):
                     return False
         return True
 
+    def _build_env(self):
+        """Build environment with TF_VAR_ variables"""
+        env = os.environ.copy()
+        env.update({f'TF_VAR_{k}': str(v) for k, v in self.env_vars.items()})
+        return env
+    
     def __do_validate(self):
         process = subprocess.run([self.terraform, 'validate', '-json'],
-                                 capture_output=True, close_fds=True, cwd=self.cwd)
+                                 capture_output=True, 
+                                 close_fds=True, 
+                                 cwd=self.cwd,
+                                 env=self._build_env())
         return json.loads(process.stdout)
 
     def __log_validation_error(self, error):

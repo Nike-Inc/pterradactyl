@@ -22,6 +22,15 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## 1.6.0
+
+#### Fixed
+- Fixed security issue where decrypted SOPS secrets were written to `main.tf.json` in plaintext
+  - Module values containing sensitive patterns (password, key, token, etc.) are now extracted as Terraform variables
+  - Sensitive values are passed via `TF_VAR_*` environment variables instead of being written to disk
+  - Added `VariableExtractor` class to handle secure value extraction with hash-based deduplication
+
+---
 ## 1.4.0
 #### Fixed
 - Fixed terraform binary install for arm64 architecture
