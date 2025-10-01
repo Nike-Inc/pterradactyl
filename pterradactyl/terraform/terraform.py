@@ -100,6 +100,8 @@ class Terraform(object):
             state = json.load(f)
 
         for path in glob.iglob(os.path.join(self.cwd, '*.tf.json')):
+            if os.path.basename(path) == 'variables.tf.json':
+                continue
             with open(path) as f:
                 tf = json.load(f)
 

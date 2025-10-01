@@ -22,6 +22,12 @@ All notable changes to this project will be documented in this file.
 
 
 ---
+## 1.6.1
+
+#### Fixed
+- Fixed redundant terraform init on every command - Issue #26
+
+---
 ## 1.6.0
 
 #### Fixed
